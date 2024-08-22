@@ -8,18 +8,12 @@
     "preview": "vocs preview"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.28.9",
     "@types/react": "latest",
-    "@web3modal/wagmi": "^4.2.2",
     "mdx-mermaid": "^2.0.0",
     "mermaid": "^10.9.0",
     "react": "latest",
     "react-dom": "latest",
-    "react-hook-form": "^7.51.2",
-    "react-hot-toast": "^2.4.1",
     "typescript": "latest",
-    "viem": "2.x",
-    "vocs": "latest",
-    "wagmi": "^2.5.13"
+    "vocs": "latest"
   }
 }
