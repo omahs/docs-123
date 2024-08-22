@@ -401,8 +401,8 @@ export default defineConfig({
             link: "/build/guides/checking-your-binaries",
           },
           {
-            text: "Creating DA explorer links",
-            link: "/build/guides/da-explorer-links",
+            text: "Checking data on DA",
+            link: "/build/guides/checking-data-da",
           },
         ],
       },
