@@ -400,6 +400,10 @@ export default defineConfig({
             text: "Check your Binaries",
             link: "/build/guides/checking-your-binaries",
           },
+          {
+            text: "Creating DA explorer links",
+            link: "/build/guides/da-explorer-links",
+          },
         ],
       },
       {

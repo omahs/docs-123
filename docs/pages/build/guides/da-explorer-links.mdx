@@ -1,0 +1,56 @@
+# Utilizing DA Metadata to create explorer links
+
+Stackr posts the block data to the DA layer as configured in the `stackr.config.ts`.
+
+The DA metadata from the `C3A` event can be used to form the DA explorer link and retrieve the entire data if required.
+
+:::steps
+
+## Retrieve DA metadata
+
+To retrieve the DA metadata for your block , you can subscribe to the [C3A](/build/framework/events#confirmationeventsc3a) events by following the guide [here](/build/framework/events#subscribing-to-events).
+
+C3A events have an argument `vulcanResponse` that contains the `daMetadata` as well. You can retrieve it as follows:
+
+```ts
+events.subscribe(ConfirmationEvents.C3A, (args) => {
+  const { vulcanResponse } = args;
+  const daMetadata = vulcanResponse?.batchInfo?.daMetadata; // [!code hl]
+});
+```
+
+## Create the Explorer link
+
+This `daMetadata` can now be used to form the explorer link depending on the DA Provider and by extracting the respective arguments.
+
+### Avail :
+
+```
+// [!code word:${daMetadata.blockHeight}]
+// [!code word:${daMetadata.extIdx}]
+https://avail-turing.subscan.io/extrinsic/${daMetadata.blockHeight}-${daMetadata.extIdx}
+```
+
+### Celestia :
+
+```
+// [!code word:${daMetadata.txHash}]
+https://mocha-4.celenium.io/tx/${daMetadata.txHash}
+```
+
+### Eigen :
+
+```
+// [!code word:${daMetadata.requestID}]
+https://blobs-holesky.eigenda.xyz/blobs/${daMetadata.requestID}
+```
+
+### DA - Explorer links
+
+| DA provider |             Explorer              |
+| ----------- | :-------------------------------: |
+| Avail       |  https://avail-turing.subscan.io  |
+| Celestia    |    https://mocha-4.celenium.io    |
+| Eigen       | https://blobs-holesky.eigenda.xyz |
+
+::::
