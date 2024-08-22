@@ -4,13 +4,13 @@ import { Callout } from "vocs/components";
 
 Actions are constructed using Action Schemas defined by the developers. To define a new action schema, you can use the `ActionSchema` utility.
 
-```typescript [actions.ts]
+```typescript [schemas.ts]
 import { ActionSchema } from "@stackr/sdk";
 ```
 
 Using the `ActionSchema` utility, a new action schema can be defined like this:
 
-```typescript [actions.ts]
+```typescript [schemas.ts]
 export const NewSchema = new ActionSchema("<IDENTIFIER>", {
   <INPUT_FIELD_NAME> : <SOLIDITY_TYPE>
 });
@@ -30,7 +30,7 @@ Breaking it down we have:
 
 The solidity types can be accessed using the `SolidityType` provided with the SDK.
 
-```typescript twoslash [actions.ts]
+```typescript twoslash [schemas.ts]
 export enum SolidityType {
   ADDRESS = 'Address',
   UINT = 'Uint',
@@ -69,7 +69,7 @@ So, for example, if you have a schema to update the count in a counter applicati
 :::details[Simple Counter]
 For a simple counter application, the action schema can be defined as follows:
 
-```typescript [counter/src/actions.ts]
+```typescript [counter/src/schemas.ts]
 import { ActionSchema, SolidityType } from "@stackr/sdk";
 
 export const UpdateCount = new ActionSchema("update-count", {
@@ -90,7 +90,7 @@ If you pass the same schema to increment transition function, it will increment 
 
 :::details[CRUD Application]
 
-```typescript [crud/src/actions.ts]
+```typescript [crud/src/schemas.ts]
 import { ActionSchema, SolidityType } from "@stackr/sdk";
 
 export const CreateEntity = new ActionSchema("create-entity", {
@@ -115,7 +115,7 @@ export const DeleteEntity = new ActionSchema("delete-entity", {
 
 :::details[Token Transfer ERC-20]
 
-```typescript [token/src/actions.ts]
+```typescript [token/src/schemas.ts]
 import { ActionSchema, SolidityType } from "@stackr/sdk";
 
 export const Transfer = new ActionSchema("transfer", {

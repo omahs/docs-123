@@ -61,7 +61,7 @@ Over here we just use a single schema for updating the counter value. Both incre
 
 We dont really need any input for the action, so we just define a timestamp field to keep the actions unique. It works as a nonce for the action.
 
-```ts [actions.ts]
+```ts [schemas.ts]
 import { ActionSchema, SolidityType } from "@stackr/sdk";
 
 export const UpdateCounterSchema = new ActionSchema("update-counter", {
