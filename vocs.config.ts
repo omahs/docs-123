@@ -243,6 +243,10 @@ export default defineConfig({
               },
             ],
           },
+          {
+            text: "Hosting",
+            link: "/build/guides/hosting",
+          },
         ],
       },
       {
