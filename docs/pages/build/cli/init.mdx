@@ -1,8 +1,19 @@
-# `init` [creates a new stackr project]
+# `init` [Create a new Stackr project]
 
 The `init` command is used to create a new Stackr project. It will create a new directory with the project name and initialize it with the necessary files and directories.
 
 ## Usage
+
+```bash
+» stackr init --help
+USAGE
+  $ stackr init [PROJECTNAME]
+
+EXAMPLES
+  $ stackr init
+```
+
+## Example
 
 ```bash
 npx @stackr/cli@latest init
@@ -25,8 +36,6 @@ It asks for a project name and creates a new directory with the project name. It
 ⠋ ⬇️  Installing packages
 ```
 
-## Output
-
 Once the project is created, you can navigate to the project directory and start working on your project.
 
 The project directory will look something like this depending on the template -
@@ -35,7 +44,7 @@ The project directory will look something like this depending on the template -
 ├── src
 │   ├── stackr
 │   │   ├── machine.ts
-│   │   ├── actions.ts
+│   │   ├── schemas.ts
 │   │   └── transitions.ts
 │   ├── index.ts
 │   ├── stackr.config.ts

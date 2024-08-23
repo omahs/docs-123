@@ -27,9 +27,10 @@ bunx @stackr/cli@latest init
 
 ? Pick a template (Use arrow keys)
 ❯ Counter (Recommended)
+  Chess
   Token Transfer
+  Bridge
   Empty
-
 ```
 
 For the purpose of this tutorial, we will use the `Counter` template.
@@ -62,9 +63,11 @@ Get started by running the following commands:
 
 ## Setting up your config
 
+### Setup `.env`
+
 - Let's `cd` into the project directory and first copy the `.env.example` file to `.env`.
 - Update the following values in the `.env` file.
-  - You can get the latest values listed in the [Providers and RPCs](/build/references/providers-and-rpc) Page.
+  - You can get the latest values listed in the [Providers and RPCs](/build/references/providers-and-rpc) page.
 
 ```bash [.env]
 PRIVATE_KEY=<PRIVATE_KEY>
@@ -75,56 +78,34 @@ DATABASE_URI=<DATABASE_URI>
 ```
 
 :::info
-`PRIVATE_KEY` is the private key of account you want to register and deploy the rollup with.
+`PRIVATE_KEY` is the private key of account you want to register and deploy the rollup with. This address acts as the Operator.
 
-We don't store your private key anywhere. It's only used to sign the transactions and is stored in your local environment.
+We don't store your private key anywhere, it is stored in your local environment. It's only used to sign on incoming actions and proposed blocks.
 :::
 
-- Now let's dive into the `stackr.config.ts` file.
+### Setup `stackr.config.ts`
 
-  :::warning
-  Ignore the warning for `./deployment.json` file not found. We will create this file in the next step.
-  :::
+Now let's dive into the `stackr.config.ts` file.
 
-- The `domain` in the config is used to create EIP712 Typed Signature over the inputs of actions. Feel free to tune this as per your requirements.
-
-```ts [stackr.config.ts]
-domain: {
-  name: "<APP_NAME>", // [!code focus]
-  version: "<APP_VERSION>", // [!code focus]
-  chainId: deployment.chainId,
-  verifyingContract: deployment.appInbox,
-  salt: "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" // [!code focus]
-}
-```
-
-## Registering your Micro-rollup
-
-Now that we have set up the config, let's register the Micro-rollup.
-Make sure you are in the project directory and run the following command:
-
-:::code-group
-
-```bash [npm]
-npx @stackr/cli@latest register
-```
-
-```bash [bun]
-bunx @stackr/cli@latest register
-```
-
-:::
-
-:::info
-This command will register your application on the registry contract. And update the `deployment.json` file with the latest values of `appId`, `appInbox` and `chainId`.
-:::
-
-You'll see a message that the application has been registered on the registry.
-
-```bash [Terminal]
-✔ 📝 Registered application on registry
-✔ 🧰 Updated deployment.json
-```
+- By default, the micro-rollup is configured to run in Sandbox mode (`isSandbox`). This is explained in the next section.
+- The main properties you might wish to tune here are `blockSize` and `blockTime` of your micro-rollup.
+  You can also set `allowEmptyBlocks` to `true` if you want your micro-rollup to always produce blocks every `blockTime` milliseconds (even when there are no actions).
+  ```ts [stackr.config.ts]
+  sequencer: {
+    blockSize: 16,
+    blockTime: 10,
+    allowEmptyBlocks: true
+  }
+  ```
+- The `domain` in the config is used to create EIP-712 Typed Signature over the inputs of actions. Feel free to tune this as per your requirements.
+  ```ts [stackr.config.ts]
+  domain: {
+    name: "<APP_NAME>",
+    version: "<APP_VERSION>",
+    salt: "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+  }
+  ```
+- You can refer to [Stackr Config](/build/framework/config) section for the explanation of every available configuration property.
 
 ## Project Structure
 
@@ -137,29 +118,51 @@ We don't enforce any specific restrictions on the naming of the files, but keepi
 ├── src
 │   ├── stackr
 │   │   ├── machine.ts
-│   │   ├── actions.ts
-│   │   └── transitions.ts
+│   │   ├── schemas.ts
+│   │   ├── transitions.ts
+│   │   └── hooks.ts
 │   ├── index.ts
 │   ├── stackr.config.ts
 │   └── deployment.json
 ```
 
-- `machine.ts` contains the `StateMachine` and `State` classes for your application.
+- `machine.ts` contains the [`StateMachine`](/build/framework/state-machine/introduction) and [`State`](/build/framework/state-machine/state) classes for your application.
 
-  - Please make sure to export the `StateMachine` object from this file.
+  - Please make sure to export the `StateMachine` object from this file in one of the following ways:
 
-  ```ts [machine.ts]
-  const myMachine = new StateMachine({ ... })
+  :::code-group
+
+  ```ts [machine.ts (declaration export)]
+  export const myMachine = new StateMachine({ ... });
+  ```
+
+  ```ts [machine.ts (named export)]
+  const myMachine = new StateMachine({ ... });
 
   export { myMachine };
   ```
 
-- `transitions.ts` contains the `STF` (State Transition Functions) for your application.
+  ```ts [machine.ts (default export)]
+  const myMachine = new StateMachine({ ... });
+
+  export default myMachine;
+  ```
+
+  :::
+
+- `schemas.ts` contains the [Action Schemas](/build/framework/action/action-schema) for your application.
+- `transitions.ts` contains the [State Transition Functions (STF)](/build/framework/state-machine/state-transitions) for your application.
+- `hooks.ts` contains the [Block Hooks](/build/framework/state-machine/block-hooks) for your application, if any.
 
 :::warning
- it is recommended that the machine.ts or the file containing the StateMachine, doesn't import anything from @stackr/sdk instead uses @stackr/sdk/machine for the StateMachine, State, Transitions and other utility classes.
-:::
+<<<<<<< HEAD
+it is recommended that the machine.ts or the file containing the StateMachine, doesn't import anything from @stackr/sdk instead uses @stackr/sdk/machine for the StateMachine, State, Transitions and other utility classes.
+=======
+It is recommended that the `machine.ts` or the file containing the `StateMachine` instance, doesn't import anything from `@stackr/sdk` instead uses `@stackr/sdk/machine` for the `StateMachine`, `State`, `Transitions` and other utility classes.
 
-## Advanced
+> > > > > > > main
+> > > > > > > :::
 
-- [Checking your WASM Binary](/build/guides/checking-your-binaries)
+## Next Steps
+
+In this section, we covered how to create and setup a new project using Stackr CLI and SDK. In the next section, we will see how to run our micro-rollup and interact with it.

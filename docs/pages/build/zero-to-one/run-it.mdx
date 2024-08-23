@@ -7,14 +7,26 @@ If you are using a template it might already have a micro-rollup setup. But a fe
 
 You have created an instance of `MicroRollup` and passed the necessary options.
 
-### Action Registration
+### Configuration
 
-You have added all the `ActionSchemas` to the `MicroRollup` constructor like this
+You have passed the `stackrConfig` object exported from the `stackr.config.ts` file to the `MicroRollup` constructor like this
 
 ```ts showLineNumbers [index.ts]
 const rollup = await MicroRollup({
-    actionSchemas: [ActionSchema1, ActionSchema2, ...], // [!code focus]
-    ...
+  config: stackrConfig, // [!code focus]
+  ...
+});
+```
+
+### Action Registration
+
+You have added all the `ActionSchema`s to the `MicroRollup` constructor like this
+
+```ts showLineNumbers [index.ts]
+const rollup = await MicroRollup({
+  config: stackrConfig,
+  actionSchemas: [ActionSchema1, ActionSchema2, ...], // [!code focus]
+  ...
 });
 ```
 
@@ -24,9 +36,10 @@ You have added the State Machine lazily to the micro-rollup, using
 
 ```ts showLineNumbers [index.ts]
 const rollup = await MicroRollup({
-    actionSchemas: [ActionSchema1, ActionSchema2, ...],
-    stateMachines: [machine], // [!code focus]
-    ...
+  config: stackrConfig,
+  actionSchemas: [ActionSchema1, ActionSchema2, ...],
+  stateMachines: [machine], // [!code focus]
+  ...
 });
 ```
 
@@ -36,9 +49,10 @@ You have started the micro-rollup using
 
 ```ts showLineNumbers [index.ts]
 const rollup = await MicroRollup({
-    actionSchemas: [ActionSchema1, ActionSchema2, ...],
-    stateMachines: [machine],
-    ...
+  config: stackrConfig,
+  actionSchemas: [ActionSchema1, ActionSchema2, ...],
+  stateMachines: [machine],
+  ...
 });
 
 await rollup.init() // [!code focus]
@@ -46,57 +60,45 @@ await rollup.init() // [!code focus]
 
 ::::
 
-## Let's Deploy 🚀
+## Let's Run 🏃‍♂ [Sandbox mode]
+
+To be doubly sure that everything is working fine, let's try to run your application and see if it works as expected.
+
+In this example, we will run our micro-rollup in sandbox mode.
 
 :::info
-The below command will package your State Machine and send it to Vulcan for deployment and re-execution on the network.
+**Sandbox mode** 🧪
+
+Sandbox mode doesn't require registration or deployment of your MRU. The SDK creates a temporary SQLite database to store data and the blocks are not sent to Vulcan or L1 for verification.
+It's recommended to use this mode while development and for experimentation. Enable this by setting `isSandbox` property to `true` in `stackr.config.ts`.
 :::
+
+### Run using Node.js 
 
 :::code-group
 
 ```bash [npm]
-npx @stackr/cli@latest deploy
+npm start
 ```
-
 ```bash [bun]
-bunx @stackr/cli@latest deploy
+bun start
 ```
 
 :::
 
-You'll see the following on the terminal, on successful deployment:
-
-```bash [Terminal]
-✔ 🏗️  State Machine built
-✔ 📝 Registered STF to AppInbox
-✔ 🖖 Deployed to Vulcan
-```
-
-## Let's Run 🏃‍♂
-
-To be doubly sure that everything is working fine, let's try to run your application and see if it works as expected.
-
-### Run using Node.js 
-
-```bash [Terminal]
-npm start
-```
-
 ### Run using Docker 🐳
 
-- Build the image using the following command: (make sure you replace `<NPM_TOKEN>` with the actual value)
+- Build the image using the following command:
 
 :::code-group
 
 ```bash [Linux]
-docker build -t app_name:latest . \
-  --build-arg NPM_TOKEN=<NPM_TOKEN>
+docker build -t <app_name>:latest .
 ```
 ```bash [Mac w/ Apple Silicon]
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  -t app_name:latest . \
-  --build-arg NPM_TOKEN=<NPM_TOKEN>
+  -t <app_name>:latest .
 ```
 :::
 
@@ -104,15 +106,15 @@ docker buildx build \
 
 :::code-group
 ```bash [File-based DB]
-docker run \
+docker run --env-file .env \
   -v ./db.sqlite:/app/db.sqlite \
   -p <HOST_PORT>:<CONTAINER_PORT> \
-  --name=app_name -it app_name:latest
+  --name=<app_name> -it <app_name>:latest
 ```
 ```bash [URI-based DB]
-docker run \
+docker run --env-file .env \
   -p <HOST_PORT>:<CONTAINER_PORT> \
-  --name=app_name -it app_name:latest
+  --name=<app_name> -it <app_name>:latest
 ```
 :::
 
@@ -132,6 +134,10 @@ If you see the above logs, congratulations! Your application is running successf
 
 If you are using the "Counter" example, the `index.ts` file already contains the code to interact with the micro-rollup.
 
+### Submitting Action
+
+Using the [`submitAction`](/build/framework/micro-rollup-utils#submitactionreducername-string-action-action) method, you can submit the action to the micro-rollup.
+
 ```ts [index.ts]
 const inputs = {
   timestamp: Date.now(),
@@ -149,19 +155,52 @@ const incrementAction = UpdateCounterSchema.actionFrom({
 const ack = await mru.submitAction("increment", incrementAction); // [!code hl]
 ```
 
-The code above is just for reference, mostly you won't be signing the message here on your backend. Rather you'll get the inputs along with signature and msgSender from the frontend and then submit the action to the micro-rollup. Using the `submitAction` method, you can submit the action to the micro-rollup.
+:::info
+The code above is just for reference, mostly you won't be signing the message here on your backend. Rather you'll get the action parameters (`inputs`, `signature` and `msgSender`) together from the frontend and then submit the action to the micro-rollup.
+:::
+
 
 Once an action is submitted to the micro-rollup, you get an acknowledgment in the form of a `Promise` which resolves to the `Acknowledgment` object. You can use this object to track the status of the action.
 
-### Event Subscription
+### Tracking Action's Lifecycle
 
-Or you can also use the `subscribe` method to subscribe to the action status. This method takes the actionId and a callback function as arguments. The callback function is called whenever the status of the action changes.
+#### Using `ack.waitFor`
+
+The `Acknowledgment` object returned by `submitAction` contains a [`waitFor`](/build/framework/micro-rollup-utils#ackwaitforconfirmationstatus--actionconfirmationstatusc1) method that can be used to wait for the action to reach a specific confirmation status.
 
 ```ts [index.ts]
-mru.events.subscribe(ActionEvents.CONFIRMATION_STATUS, (data) => {
-  console.log(data);
+import { SerializedAction } from "@stackr/sdk";
+
+/* ... */
+
+// resolves when action reaches C1
+// [!code word:waitFor]
+const action: SerializedAction = await ack.waitFor(ActionConfirmationStatus.C1); // [!code hl]
+```
+
+:::tip
+🚀 **Build real-time apps** 🚀
+
+Since micro-rollups [execute actions within millseconds](/build/framework/action/confirmation-status#c1--executed-milliseconds), you immediately get feedback on the effects of the action. This allows, for example, a familiar Web2-style request-response flow where the action's changes to state or logs can be returned in response to the very same request that submitted the action. This is really useful for real-time apps that require an instant and interactive responsive UI.
+:::
+
+#### Using events
+
+You can also use the `subscribe` method to listen for changes to the action's lifecycle. 
+
+For example, you can define a custom callback function subscribing to the [`ActionEvents.CONFIRMATION_STATUS`](/build/framework/events/#actioneventsconfirmation_status) event that is called whenever the confirmation status of the action changes, like this:
+
+```ts [index.ts]
+import { ActionEvents } from "@stackr/sdk";
+
+/* ... */
+
+mru.events.subscribe(ActionEvents.CONFIRMATION_STATUS, ({ actionName, actionHash, status }) => {
+  console.log({ actionName, actionHash, status });
 });
 ```
+
+Refer to the [Events](/build/framework/events) section for more details on this.
 
 ### Querying the State
 
@@ -178,12 +217,12 @@ console.log("Current state:", state);
 
 ### Play with it
 
-Stackr gives a plugin along with their SDK to interact with the micro-rollup. You can attach the plugin to your MRU instance and use it to debug, interact or track the life-cycle of action or block.
+Stackr comes with a [Playground](/build/plugins/playground) plugin along with the SDK to interact with the micro-rollup. You can attach the plugin to your MRU instance and use it to debug, interact or track the life-cycle of action or block.
 
 ```ts [index.ts]
 import { Playground } from "@stackr/sdk/plugins"; // [!code focus]
 
-const mru = new MRU({
+const mru = new MicroRollup({
     ...
 });
 
@@ -194,16 +233,20 @@ This will spin up a local server on `http://localhost:42069` by default, which w
 
 You can now visit [playground.stf.xyz](https://playground.stf.xyz) in your browser to interact with your micro-rollup. If prompted give it the URL of your local server started by playground.
 
-## Conclusion
+### Everything else...
 
-In this guide, we learned how to create a micro-rollup using the Stackr SDK, deploy it to the Vulcan network, and interact with it using the SDK.
+You can refer to [Micro-Rollup Utilities](/build/framework/micro-rollup-utils) section for details on all the methods available to interact with the `MicroRollup` instance.
+
+## Next Steps
+
+In this section, we learned how to run our micro-rollup and interact with it.
 
 :::info
 You can find the full breakdown of this app in the [Counter Rollup Tutorial](/build/guides/tutorials/counter) guide.
 :::
 
-## Next Steps
-
-You can now start building and customizing your own rollup using the Stackr SDK. Start by modifying the `machine.ts`, `transitions.ts` and relevant files to suit your requirements.
+You can now start building and customizing your rollup using the Stackr SDK. Start by modifying the `machine.ts`, `transitions.ts`, and relevant files as per your requirements.
 
 You can wrap the micro-rollup in a REST API or GraphQL API to interact with it from the frontend.
+
+In the next section, we will learn how to register and deploy our application on Stackr's network and on-chain.

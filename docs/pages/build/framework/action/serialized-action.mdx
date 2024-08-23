@@ -2,6 +2,10 @@
 
 A serialized action is an action that encapsulates the execution and confirmation status along with logs and errors encountered during the execution of the acton.
 
+<<<<<<< HEAD
+=======
+## Serialized Action
+>>>>>>> main
 
 A serialized action looks like this
 ```typescript
@@ -44,3 +48,26 @@ Returns the execution logs for the action. If not null, the execution succeeded 
 Returns any errors that occurred during the execution of the action. It is null if the action has not yet been executed. Here the action is of type ``SerializedAction``.
 
 **Type:** `ExecutionError[] | null;`
+<<<<<<< HEAD
+=======
+
+## Serialized Block
+
+When using the [`MicroRollupResponse.actions.query`](/build/framework/micro-rollup-utils/#actionsqueryfilters-actionfilterparams-orderasc-boolean) method, the `SerializedAction` also includes block details. Then its datatype is `SerializedActionAndBlock` and looks like
+
+```ts
+interface SerializedBlock {
+  height: number;
+  hash: string;
+  timestamp: number;
+  status: BlockStatus;
+  batchInfo?: BatchInfo;
+}
+
+interface SerializedActionAndBlock extends SerializedAction {
+  block: SerializedBlock | null;
+}
+```
+
+These fields are described in the [Block](/build/framework/block) section.
+>>>>>>> main

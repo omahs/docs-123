@@ -1,6 +1,46 @@
 # Changelog [What's new]
 
-## v0.5.0 (and CLI v0.0.21)
+## v0.5.3
+
+#### Features / Improvements
+
+- Change datatype of `msgSender` and `signature` fields to `string` everywhere (such as `STF` args and `ActionParams` interface).
+
+#### Bug Fixes
+
+- Fix ordering of properties in `Domain` type returned from [`MicroRollupResponse.config.domain`](/build/framework/micro-rollup-utils#config).
+- Fix a bug where the L1 listener would at times run into `"filter not found"` error.
+
+## v0.5.2 (and CLI v0.1.2)
+
+#### Breaking Changes
+
+- Revamp the fields in [`StackrConfig`](/build/framework/config) and arguments to [`MicroRollup`](/build/framework/micro-rollup) constructor. See [upgrade guide](/build/upgrade-guide).
+- Remove `previousStateRoot` and `newStateRoot` fields from `ExecutorEvents.EXECUTE_ACTION` event payload ([`ExecuteActionEventArgs`](/build/framework/events/#executoreventsexecute_action)).
+
+#### Features / Improvements
+
+- Micro-rollups can now be ran in "Sandbox" mode, without registration. The new config changes removes dependencies on `deployment.json` and `stackrApp` fields.
+- Expose `emit` in block hooks as well (previously it was available only in STFs). [Learn more](/build/framework/state-machine/block-hooks#custom-execution-logs).
+- Add ability to [unsubscribe](/build/framework/events#unsubscribing-from-events) or [inspect/list active listeners](/build/framework/events/#inspecting-active-subscriptions) to MRU events.
+- Perform C2, C3A and C3B syncs for stale blocks on MRU start-up. This is useful to quickly sync latest states if you re-run the MRU after some downtime.
+- Add `previousState`, `previousStateRoot` and `executionHooksLogs` fields to `ExecutorEvents.EXECUTE_BLOCK` event payload ([`ExecuteBlockEventArgs`](/build/framework/events/#executoreventsexecute_block)).
+- The `sequencer.tick()` method exposed in `MicroRollupResponse` now returns a boolean value indicating whether a new block was sequenced or not.
+- [CLI] New `verify` command: Verify that the source state machine binary matches with the registered binary on AppInbox. [Learn more](https://www.npmjs.com/package/@stackr/cli#stackr-verify-appinboxcontract).
+
+#### Bug Fixes
+
+- Fixes a bug where it was possible to force create an empty block by returning an empty list of actions from sequencer strategy.
+- [CLI] Registering app subsequently won't fail if hash values match.
+- [Playground] Fix state rendering for non-JSON state.
+
+## v0.5.1 (and CLI v0.1.1)
+
+- [SDK] fix: get missing `block.batchInfo` from `actions.query()`
+- [CLI] feat: Add Windows support for `stackr` CLI commands and improve error handling.
+- [CLI] feat: add `--envFile` flag to all commands to load environment variables from a different file than `.env`
+
+## v0.5.0 (and CLI v0.1.0)
 
 > Upgrade guide: [here](/build/upgrade-guide).
 
@@ -16,6 +56,10 @@
 - Ability to create empty blocks by setting `sequencer.enableEmptyBlocks` to `true` in `StackrConfig`.
 - Add `logs` and `errors` fields to `ActionExecutionStatusEventArgs` interface.
 - Make `syncer.slotTime` an optional field (in `StackrConfig`) having a default value of `max(1000, blockTime)` ms. If provided value is less than `1000` ms, it defaults to `max(1000, blockTime)` ms too.
+  <<<<<<< HEAD
+  =======
+- Add `C1X` as a new action confirmation level that represents failed execution.
+  > > > > > > > main
 - [CLI] Use dynamic linking for reduced Wasm binary size.
 
 #### Bug Fixes
@@ -32,8 +76,9 @@
 
 #### Features
 
-- [SDK] Expose `emit` function in STF that can be used to record custom logs.
+- [SDK] Expose `emit` method in STF that can be used to record custom logs. [Learn more](/build/framework/state-machine/state-transitions#custom-execution-logs).
 - [SDK] Add fields `logs` and `errors` to `SerializedAction`.
+- [SDK] Expose [`waitFor`](/build/framework/micro-rollup-utils#ackwaitforconfirmationstatus-actionconfirmationstatus) method in the `SerializedAcknowledgement` object returned from `submitAction`.
 
 #### Improvements
 

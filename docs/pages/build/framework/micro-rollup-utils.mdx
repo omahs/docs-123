@@ -2,7 +2,7 @@
 
 The Micro-Rollup object exposes a few utility functions that can be used for various purposes -
 
-## Initialization and Configuration
+## Initialization and Termination
 
 ### `init()`
 
@@ -15,6 +15,20 @@ Initializes the Micro-Rollup instance. Sets up all necessary configurations, act
 Gracefully shuts down the Micro-Rollup instance, ensuring all pending operations are completed and resources are properly released.
 
 **Returns:** `Promise<void>`
+
+## Configuration
+
+### `config`
+
+A readonly object representing the final configuration of the Micro-Rollup. This is essentially a flattened and complete version of `StackrConfig` combined with values from `deployment.json`.
+
+**Returns:** `Readonly<ExternalConfig>` ([definition](/build/framework/config#accessing-config-values))
+
+### `getStfSchemaMap()`
+
+A map of the STF names to the ActionSchema names. Available only if [`stfSchemaMap`](/build/framework/micro-rollup#optional-parameters) parameter was passed to `MicroRollup` constructor.
+
+**Returns:** `Record<string, string>`
 
 ## Action Handling
 
@@ -29,15 +43,15 @@ Submits an action to be processed by the rollup, routed based on the specified r
 
 **Returns:** `Promise<SerializedAcknowledgement>`
 
-### `ack.waitFor(confirmationStatus?: ActionConfirmationStatus)`
+### `ack.waitFor(confirmationStatus? = ActionConfirmationStatus.C1)`
 
 Waits for the action, for which the acknowledgment is created, to reach a specific confirmation status. Returns immediately if the action has already reached or surpassed the desired status.
 
 **Parameter:**
 
-- `confirmationStatus`: Confirmation status to wait for (defaults to C1). Can take one of C1, C2, C3A or C3B.
+- `confirmationStatus`: `ActionConfirmationStatus` to wait for (defaults to C1). Can take one of C1, C2, C3A or C3B.
 
-**Returns:** `Promise<SerializedAction>` [here](/build/framework/action/serialized-action)
+**Returns:** `Promise<SerializedAction>` ([definition](/build/framework/action/serialized-action))
 
 ### `actions.getSchema(identifier: string)`
 
@@ -57,24 +71,13 @@ Retrieves a serialized action from the rollup using its hash.
 
 - `actionHash`: Hash of the action.
 
-**Returns:** `Promise<SerializedAction | null>` [here](/build/framework/action/serialized-action)
+**Returns:** `Promise<SerializedAction | null>` ([definition](/build/framework/action/serialized-action))
 
 ### `actions.getAllSchemas()`
 
 Returns all action schemas available in the Micro-Rollup.
 
 **Returns:** `SchemaObject[]`
-
-### `actions.getByInputsAndSender(inputs: AllowedInputTypes, sender: string)`
-
-Retrieves an action based on inputs provided and sender's address.
-
-**Parameters:**
-
-- `inputs`: Inputs to the action.
-- `sender`: Sender's address.
-
-**Returns:** `Promise<SerializedAction | null>` [here](/build/framework/action/serialized-action)
 
 ### `actions.waitFor(actionHash: Keccak256, confirmationStatus = ActionConfirmationStatus.C1)`
 
@@ -85,9 +88,40 @@ Waits for an action to reach a certain confirmation status. Returns immediately 
 - `actionHash`: Hash of the action.
 - `confirmationStatus`: Confirmation status to wait for (defaults to C1). Can take one of C1, C2, C3A or C3B.
 
-**Returns:** `Promise<SerializedAction | null>` [here](/build/framework/action/serialized-action)
+**Returns:** `Promise<SerializedAction | null>` ([definition](/build/framework/action/serialized-action))
+
+### `actions.query(filters: ActionFilterParams, orderAsc?: boolean)`
+
+Query and fetch list of actions along with their block data (if applicable) from DB.
+
+**Parameter:**
+
+- `filters`: Fields to filter on.
+
+  ```ts
+  interface ActionFilterParams {
+    name?: string;
+    schemaIdentifier?: string;
+    executionStatus?: ActionExecutionStatus | ActionExecutionStatus[];
+    confirmationStatus?: ActionConfirmationStatus | ActionConfirmationStatus[];
+    block?: {
+      status?: BlockStatus;
+      isReverted?: boolean;
+    };
+  }
+  ```
+
+- `orderAsc`: Whether the actions should be sorted in ascending or descending order of block height and position in block. Defaults to ascending order.
+
+**Returns:** `Promise<SerializedActionAndBlock[]>` ([definition](/build/framework/action/serialized-action#serialized-block))
 
 ## Sequencer Functions
+
+### `sequencer.setStrategy(strategy: BaseStrategy)`
+
+Set the sequencer strategy for your micro-rollup's sequencer. Defaults to [`FIFOStrategy`](/build/framework/sequencer#ordering).
+
+**Returns:** `void`
 
 ### `sequencer.start()`
 
@@ -103,9 +137,9 @@ Stops the sequencer.
 
 ### `sequencer.tick()`
 
-Processes the next set of actions in one sequencer tick.
+Processes the next set of actions in one sequencer tick. Returns flag indicating whether a new block was sequenced or not.
 
-**Returns:** `Promise<void>`
+**Returns:** `Promise<boolean>`
 
 ## State Machine Operations
 
@@ -151,7 +185,7 @@ Stops the syncer.
 
 ### `syncer.submitBlock()`
 
-Submits the current block to Vulcan.
+Submits the earliest block with `C1` confirmation to Vulcan for verification.
 
 **Returns:** `Promise<void>`
 
@@ -173,26 +207,6 @@ Retrieves a block by its height.
 
 **Returns:** `Promise<BlockData | null>`
 
-### `chain.getBlockByActionHash(actionHash)`
-
-Retrieves a block containing a specific action by its hash.
-
-**Parameters:**
-
-- `actionHash`: Hash of the action.
-
-**Returns:** `Promise<BlockData | null>`
-
-### `chain.getBlockHashByActionHash(actionHash)`
-
-Retrieves the block hash for a block containing a specific action.
-
-**Parameters:**
-
-- `actionHash`: Hash of the action.
-
-**Returns:** `Promise<Keccak256 | null>`
-
 ### `chain.getBlockByHash(hash)`
 
 Retrieves a block by its hash.
@@ -203,8 +217,18 @@ Retrieves a block by its hash.
 
 **Returns:** `Promise<BlockData | null>`
 
+### `chain.getBlockByActionHash(actionHash)`
+
+Retrieves a block containing a specific action by its hash.
+
+**Parameters:**
+
+- `actionHash`: Hash of the action.
+
+**Returns:** `Promise<BlockData | null>`
+
 ## Event Handling
 
 ### `events`
 
-Handles events within the Micro-Rollup framework. Specific methods and operations depend on the implementation of `EventHandler`. More about these in the next section.
+Handles subscriptions to events within the Micro-Rollup framework. More about these in the [next section](/build/framework/events).

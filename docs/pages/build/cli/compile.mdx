@@ -1,0 +1,41 @@
+# `compile` [Compile your app's state machine to Wasm]
+
+The `compile` command is used to compile your Micro-Rollup's State Machine to portable WebAssembly (Wasm) binary.
+
+:::info
+Generally, you wouldn't use this command manually since the [`deploy`]((/build/cli/deploy)) command takes care of this step internally.
+:::
+
+## Usage
+
+```bash
+» stackr compile --help
+USAGE
+  $ stackr compile
+
+EXAMPLES
+  $ stackr compile
+```
+
+## Example
+
+Make sure you are in the project directory and run the following command:
+
+```bash
+$ npx @stackr/cli@latest compile
+```
+
+If all goes well, you will see the following output:
+
+```bash
+✔ 🏗️  State Machine built
+```
+
+The produced build artifacts and the Wasm binary are placed inside the `stackr_build` directory.
+
+```bash
+$ ls stackr_build
+build_logs.txt stf.js         stf.ts         stf.wasm
+```
+
+You may refer to the [Checking your Wasm Binary](/build/guides/checking-your-binaries) section on how to check whether the binary was correctly compiled.

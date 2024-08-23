@@ -46,9 +46,9 @@ The state is passed as a reference to the handler function. This means that you 
 
 The transition function is a pure function. This means that it should not have any side effects and should only depend on the inputs. This is important because the state is verified by Vulcan after the block is sent to it. Vulcan can only run the STF inside a sandboxed environment and cannot run any async operations or access the network or perform any side effects.
 
-## Passing Inputs to the Transition Function
+## Passing Inputs to an STF
 
-The state transition functions accept inputs, which is available through the `inputs` argumaent on the handler. These inputs are derived through which `ActionSchema` was used to trigger the STF.
+The state transition functions accept inputs, which is available through the `inputs` argument on the handler. These inputs are derived through which `ActionSchema` was used to trigger the STF.
 
 ```tsx [transitions.ts]
 const increment: STF<CounterState> = {
@@ -59,3 +59,114 @@ const increment: STF<CounterState> = {
   },
 };
 ```
+
+## Variables available inside an STF
+
+There are 6 special variables which always exist inside the handler of the State transition function. These can be used by the developer to write the logic of the state transition function:
+
+1. `state`
+2. `msgSender`
+3. `inputs`
+4. `signature`
+5. `block`
+    - `block.height`
+    - `block.timestamp`
+    - `block.parentHash`
+6. `emit`
+
+{/* prettier-ignore */}
+```ts twoslash [transitions.ts]
+// @noErrors
+type MachineState = unknown;
+type InputTypes = any;
+
+interface STF<MachineState, InputTypes> {
+  handler: (props: {
+    state: MachineState;
+    msgSender: string;
+    inputs: InputTypes;
+    signature: string;
+    block: {
+      height: number;
+      timestamp: number;
+      parentHash: BytesLike;
+    };
+    emit: (ExecutionLog) => void; 
+  }) => MachineState;
+}
+// ---cut---
+// Without Destructuring
+const superCoolStf: STF<MachineState, InputTypes> = {
+  handler: (props) => {
+    const state = props.
+    //                  ^|
+
+
+
+
+    const height = props.block.
+    //                         ^|
+  },
+};
+
+
+// With Destructuring
+const anotherSuperCoolStf: STF<MachineState, InputTypes> = {
+  handler: ({ s }) => {
+    //         ^|
+  },
+};
+```
+
+### State
+
+1. `state` : The entire current state of the state machine in wrapped format. This is the state that the state transition function is supposed to modify.
+
+:::info
+The STF receives a cloned version of the state, and the state transition function must return the modified state to update the state of the state machine.
+:::
+
+### Action Data
+
+When an action is dispatched, the inputs are passed to the state transition function. The inputs are the parameters passed to the action schema.
+
+1. `msgSender` : The address of the sender of the transaction.
+
+2. `inputs` : The inputs passed to the action schema.
+
+3. `signature` : The signature of the msgSender on the inputs.
+
+:::info
+In the current version of the SDK, the `msgSender` is the same as the account that signs the input payload. In future iterations someone could submit the payload on behalf of another account which signed the payload.
+:::
+
+### Block Properties
+
+A `block` object containing the current block height, timestamp and the parent block's hash is passed as an argument to the state transition function. These can be used to generate pseudo-random numbers or to implement time-based logic.
+
+1. `block.height` : The height of the block in which the transaction is included.
+
+2. `block.timestamp` : The timestamp of the block in which the transaction is included.
+
+3. `block.parentHash` : The hash of the parent block of the block in which the transaction is included.
+
+### Custom Execution Logs
+
+The `emit` variable passed to STF is a method that can be used to record custom execution logs (later accessible at [`action.logs`](/build/framework/action/serialized-action#actionlogs)).
+
+Example usage:
+
+```tsx [transitions.ts]
+const increment: STF<CounterState> = {
+  // [!code word:emit]
+  handler: ({ state, inputs, emit }) => {
+    state += inputs.amount;
+    emit({ name: "incremented", value: inputs.amount });
+    return state;
+  },
+};
+```
+
+## Bonus: Pseudo-Random Number Generation
+
+The `block.parentHash` can be used to generate pseudo-random numbers. The hash of the parent block is used as a seed to generate pseudo-random numbers. This is useful when you need to generate random numbers in a deterministic way. This is subjected to change with VRF implementation in the future.

@@ -1,0 +1,69 @@
+# `add hook` [Deploy a hook and register with AppInbox]
+
+The `add hook` command is used to set the Hook contract in your AppInbox on-chain. This is a contract that extends the [`IBaseHook`](#example-hook-contract) interface to incorporate any custom logic post a rollup batch's submission.
+
+## Usage
+
+```bash
+» stackr add hook --help 
+USAGE
+  $ stackr add [ENTITY] [CONTRACT] [--envFile <value>]
+
+ARGUMENTS
+  ENTITY    (bridge|hook) Entity to add to your App Inbox
+  CONTRACT  Contract Address of the entity to add to your App Inbox
+
+FLAGS
+  --envFile=<value>  [default: .env] Path to the .env file
+
+EXAMPLES
+  $ stackr add bridge 0x1234567890abcdef1234567890abcdef12345678
+
+  $ stackr add hook 0x1234567890abcdef1234567890abcdef12345678
+
+  $ stackr add hook 0x1234567890abcdef1234567890abcdef12345678 --envFile=<relative path to file>
+```
+
+## Example
+
+```bash
+npx @stackr/cli@latest add hook
+```
+
+You'll be prompted to enter your hook address.
+
+```bash [terminal]
+? Hook Contract Address
+```
+
+Enter the address and hit enter. 
+
+Output if it passes all the checks:
+
+```bash [terminal]
+✔ 🪝 Succesfully added hook contract to AppInbox
+```
+
+## Example Hook Contract
+
+```solidity [IBaseHook.sol]
+interface IBaseHook {
+    function postSubmit(
+        IAppInbox.Batch calldata _batch,
+        address _submitter
+    ) external;
+}
+```
+
+```solidity [Hook.sol]
+contract MyHook is IBaseHook {
+    event MyEvent();
+
+    function postSubmit(
+        IAppInbox.Batch calldata _batch,
+        address _submitter
+    ) external override {
+        emit MyEvent();
+    }
+}
+```

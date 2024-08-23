@@ -2,16 +2,14 @@
 
 The `stackr.config.ts` file is the main configuration file for the micro-rollup. It contains all the parameters that are used to configure the micro-rollup.
 
+## Example
+
 ```ts [stackr.config.ts]
 const stackrConfig: StackrConfig = {
-  stackrApp: {
-    appId: deployment.appId,
-    appInbox: deployment.appInbox,
-  },
   sequencer: {
     blockSize: 16,
     blockTime: 10,
-    enableEmptyBlocks: true,
+    allowEmptyBlocks: true,
   },
   syncer: {
     slotTime: 1000,
@@ -30,8 +28,6 @@ const stackrConfig: StackrConfig = {
   domain: {
     name: "Stackr MVP v0",
     version: "1",
-    chainId: deployment.chainId,
-    verifyingContract: deployment.appInbox,
     salt: "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
   },
   datastore: {
@@ -44,67 +40,152 @@ const stackrConfig: StackrConfig = {
 };
 ```
 
+where the type definition of `StackrConfig` is as follows:
+
+```ts
+interface StackrConfig {
+  isSandbox?: boolean;
+  deploymentFile?: string;
+  sequencer: {
+    blockSize: number;
+    blockTime: number;
+    allowEmptyBlocks?: boolean;
+    disableBuilder?: boolean;
+  };
+  syncer: {
+    slotTime?: number;
+    vulcanRPC: string;
+    L1RPC: string;
+    disableVulcanSync?: boolean;
+    disableL1Sync?: boolean;
+  };
+  registryContract: string;
+  operator: {
+    accounts: Account[];
+  };
+  domain: {
+    name: string;
+    version: string;
+    salt: string;
+  };
+  datastore: {
+    type?: "sqlite" | "postgres" | "mysql" | "mariadb";
+    uri: string;
+  };
+  preferredDA?: "avail" | "celestia";
+  logLevel?: "log" | "error" | "warn" | "debug" | "verbose";
+}
+```
+
 ## Parameters
 
-1. `stackrApp`: Contains the `appId` and `appInbox` of the micro-rollup.
+1. `isSandbox`: A boolean flag to indicate if the rollup is running in a sandbox environment. Defaults to `false`.
 
-This is set during registration of the micro-rollup with the registry contract using `stackr register` command. See [Register](/build/cli/register) for more details.
+When running an MRU in sandbox mode, the rollup creates a temporary SQLite database to store data and the blocks are not sent to Vulcan or L1 for verification. Vulcan and L1 Syncers are disabled in sandbox mode and therefore the only confirmation you get on an action is `C1`.
 
 ---
 
-2. `sequencer`: Contains the parameters for the sequencer module.
+2. `deploymentFile`: Relative path to the deployment file containing the `appId`, `appInbox` and `chainId` of the micro-rollup. Defaults to `deployment.json`.
+
+<<<<<<< HEAD
 
 - `blockSize`: The number of actions that the sequencer picks up in a single block.
 - `blockTime`: The time interval after which the sequencer picks up the actions in a block.
-- `enableEmptyBlocks`: A flag to allow creation of empty blocks (the one with no actions).
+- # `enableEmptyBlocks`: A flag to allow creation of empty blocks (the one with no actions).
+  This file is created automatically during registration of the micro-rollup with the registry contract using `stackr register` command. See [Register](/build/cli/register) for more details.
+  > > > > > > > main
 
 ---
 
-3. `syncer`: Contains the parameters for the syncer module.
+3. `sequencer`: Contains the parameters for the sequencer module.
 
-- `slotTime`: The time interval after which the rollup sends a block to Vulcan for verification and finalization
-- `vulcanRPC`: The RPC endpoint of the Vulcan chain.
-- `L1RPC`: The RPC endpoint of the L1 chain.
+- `blockSize`: The number of actions that the sequencer picks up from the pool to build a block.
+- `blockTime`: The time interval (in milliseconds) after which the sequencer picks up actions from the pool to build a block.
+- `allowEmptyBlocks`: A flag to allow creation of empty blocks (the one with no actions). Defaults to `false`.
+- `disableBuilder`: A flag to indicate if the rollup should not use the builder to generate new blocks. This is useful for [functionally generating blocks](/build/framework/micro-rollup-utils#sequencertick) when needed. Defaults to `false`.
 
 ---
 
-4. `operator`: Contains the parameters for the operator module.
+4. `syncer`: Contains the parameters for the syncer module.
+
+- `slotTime`: The time interval (in milliseconds) after which the rollup sends a block to Vulcan for verification and finalization.
+- `vulcanRPC`: The RPC endpoint of the Vulcan chain. Can be found in [Network Configuration](/build/references/providers-and-rpc).
+- `L1RPC`: The RPC endpoint of the L1 chain. Can be found in [Network Configuration](/build/references/providers-and-rpc).
+- `disableVulcanSync`: A flag to indicate if the rollup should not sync with Vulcan. Defaults to `false`, except in Sandbox mode, where it defaults to `true`.
+- `disableL1Sync`: A flag to indicate if the rollup should not sync with the L1 chain. Defaults to `false`, except in Sandbox mode, where it defaults to `true`.
+
+---
+
+5. `operator`: Contains the parameters for the operator module.
 
 - `accounts`: Contains the private key of the operator account. This private key is used for registration and batch signing
 
 ---
 
-5. `domain`: Contains the parameters for the EIP-712 domain.
+6. `domain`: Contains the parameters for the EIP-712 domain.
 
 - `name`: The name of the micro-rollup
 - `version`: The version of the micro-rollup
-- `chainId`: The chainId of the parent chain, in this case its sepolia (11155111)
-- `verifyingContract`: The address of the appInbox
 - `salt`: A random salt value
+
+The other fields, `chainId` and `verifyingContract`, required by [EIP-712](https://eips.ethereum.org/EIPS/eip-712) domain definition are taken automatically from the given deployment file.
+
+This is used for EIP-712 Typed Signature over the inputs of actions.
 
 ---
 
-6. `datastore`: Contains the parameters for the datastore module.
+7. `datastore`: Contains the parameters for the datastore module.
 
 This is used for local storage of the micro-rollup state, actions and blocks
 
 ---
 
-7. `registryContract`: The address of the registry contract
+8. `registryContract`: The address of the registry contract.
+
+Can be found in [Network Configuration](/build/references/providers-and-rpc).
 
 ---
 
-8. `preferredDA`: The preferred data availability layer
+9. `preferredDA`: The preferred data availability layer
 
 We currently support two data availability layers -
 
-1. Avail
+1. Avail (default)
 2. Celestia
 
 with more support of data availability layers coming soon. No additional configuration is required beyond selecting the preferred data availability layer.
 
 ---
 
-9. `logLevel`: The log level of the micro-rollup
+10. `logLevel`: The log level of the micro-rollup. Defaults to `log`.
 
 This is used for viewing the logs of the micro-rollup during runtime. Logs are a useful tool for debugging and monitoring the micro-rollup and checking for any errors.
+
+## Accessing config values
+
+It's not recommended to use the `stackrConfig` object defined above directly in your rollup code, other than for initializing `MicroRollup`.
+
+Instead, to read any value from the config, use the [`MicroRollupResponse.config`](/build/framework/micro-rollup-utils#config) object which returns a `Readonly<ExternalConfig>` object whose type definition is:
+
+```ts
+type ExternalConfig = {
+  appId: number;
+  appInbox: string;
+  chainId: number;
+  disableBuilder: boolean;
+  blockSize: number;
+  blockTime: number;
+  allowEmptyBlocks: boolean;
+  disableVulcanSync: boolean;
+  disableL1Sync: boolean;
+  slotTime: number;
+  vulcanRPC: string;
+  L1RPC: string;
+  isSandbox: boolean;
+  domain: Domain;
+  registryContract: string;
+  preferredDA: DA;
+  accounts: PublicAccount[];
+  logLevel: LogLevel;
+};
+```

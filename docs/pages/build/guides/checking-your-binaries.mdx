@@ -1,6 +1,6 @@
-# Checking WASM binary
+# Checking Wasm binary
 
-Stackr builds a WASM binary of your State Machine and stores it in `stackr_build/stf.wasm`. You can check the binary using the `wasmtime` or similar tools.
+Stackr builds a Wasm binary of your State Machine and stores it in `stackr_build/stf.wasm`. You can check the binary using a Wasm runtime like [wasmtime](https://github.com/bytecodealliance/wasmtime) or similar tools.
 
 In this example, we will use `wasmtime` to check the binary.
 
@@ -18,12 +18,18 @@ The easiest way to check that the SSM is valid is to give it an array of empty a
 It should then return the same state as no actions were applied.
 
 ```bash [Terminal]
-echo '{"actions":[],"currentState": 0 }' | wasmtime stackr_build/stf.wasm
+# Fetch provider for Javy, this is required to be dynamically linked before running the Wasm binary
+npx javy-cli emit-provider -o provider.wasm
+
+# Run a sample block with no actions and hooks
+echo '{"actions":[],"hooks":[],"currentState":0}' | wasmtime run --preload javy_quickjs_provider_v2=provider.wasm stackr_build/stf.wasm
 ```
 
 and you should see the output as:
 ```bash [Terminal]
-0
+{"state":0,"root":"0x....."}
 ```
 
-Anything else in the output means that the WASM binary is not working as expected or failed to compile.
+State above is the updated state after applying the actions. And root is stateRoot as defined in your state machine.
+
+Anything else in the output means that the Wasm binary is not working as expected or failed to compile.

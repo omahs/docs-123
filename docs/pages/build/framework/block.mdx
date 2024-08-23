@@ -8,17 +8,20 @@ A block in Stackr framework looks like this
 
 ```ts [block.ts]
 interface BlockData {
+  // header
   appId: number;
   parentHash: string;
   height: number;
-  hash: string;
   timestamp: number;
   actionRoot: string;
   acknowledgementRoot: string;
   stateRoot: string;
-  operatorSignature: SignatureLike;
+  hooksRoot: string;
   builderSignature: SignatureLike;
   executionStatus: number;
+  // body
+  hash: string;
+  operatorSignature: SignatureLike;
   actions: {
     action: {
       hash: string;
@@ -34,25 +37,29 @@ interface BlockData {
       operatorSignature: SignatureLike;
     };
   }[];
+  hooksLogs?: BlockHookLog[];
   batchInfo?: BatchInfo;
 }
 ```
 
-### Header
+### Block header attributes
 
 - `appId`: The application id to which this block belongs to.
 - `parentHash`: The hash of the parent block.
 - `height`: The height of the block in the chain.
-- `hash`: The hash of the block.
 - `timestamp`: The timestamp at which the block was created.
 - `actionRoot`: The root hash of the actions included in the block.
 - `acknowledgementRoot`: The root hash of the acknowledgements of the actions included in the block.
 - `stateRoot`: The root hash of the state after applying the actions in the block.
-- `operatorSignature`: The signature of the operator on the block.
+- `hooksRoot`: The root hash of a merkle tree of block hook names executed in the block.
 - `builderSignature`: The signature of the builder on the block.
 - `executionStatus`: The status of the block execution. It is an encoded value that represents which action succeeded and which failed.
 - `batchInfo`: Metadata of the batch that includes this block. It is not populated by default and is later fetched from Vulcan (Verification layer).
 
-### Body
+### Block body attributes
 
+- `hash`: The hash of the block. This is Keccak-256 of encoded header.
+- `operatorSignature`: The signature of the operator on the block's hash.
 - `actions`: The list of actions included in the block along with their acknowledgements.
+- `hooksLogs`: Logs emitted by the block hooks. Undefined, if block is not yet executed, otherwise an array.
+- `batchInfo`: Metadata of the batch that includes this block. It is not populated by default and is later fetched from Vulcan (Verification layer).

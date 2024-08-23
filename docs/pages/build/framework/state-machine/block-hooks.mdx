@@ -12,7 +12,7 @@ Our SDK provides a way to create execution hooks for the blocks.
 
 A basic hook in Stackr looks like this:
 
-```typescript
+```ts [hooks.ts]
 import { Hook, Hooks } from "@stackr/sdk/machine";
 import { CounterState } from "./machine";
 
@@ -67,3 +67,90 @@ In this case, we call `addTwo` before and `minusTwo` after the block is executed
 :::info
 When dealing with multiple hooks, ensure that the names of the hooks in the array are passed in the order corresponding to their intended execution.
 :::
+
+## Variables available inside a block hook
+
+There are 3 special variables which always exist inside the handler of a block hook. These can be used by the developer to write the logic of a block hook:
+
+1. `state`
+2. `block`
+   - `block.height`
+   - `block.timestamp`
+   - `block.parentHash`
+3. `emit`
+
+{/* prettier-ignore */}
+```tsx twoslash [hooks.ts]
+// @noErrors
+type MachineState = unknown;
+
+interface Hook<MachineState> {
+  handler: (props: {
+    state: MachineState;
+    block: {
+      height: number;
+      timestamp: number;
+      parentHash: BytesLike;
+    };
+    emit: (ExecutionLog) => void; 
+  }) => MachineState;
+}
+// ---cut---
+// Without Destructuring
+const superCoolBlockHook: Hook<MachineState> = {
+  handler: (props) => {
+    const state = props.
+    //                  ^|
+
+
+
+
+    const height = props.block.
+    //                         ^|
+  },
+};
+
+
+// With Destructuring
+const anotherSuperCoolBlockHook: Hook<MachineState> = {
+  handler: ({ s }) => {
+    //         ^|
+  },
+};
+```
+
+### State
+
+1. `state` : The entire current state of the state machine in wrapped format. This is the state that the block hook is supposed to modify.
+
+:::info
+A block hook receives a cloned version of the state, and it must return the modified state to update the state of the state machine.
+:::
+
+### Block Properties
+
+A `block` object containing the current block height, timestamp and the parent block's hash is passed as an argument to the hook. These can be used to generate pseudo-random numbers or to implement time-based logic.
+
+1. `block.height` : The height of the block.
+
+2. `block.timestamp` : The timestamp of the block.
+
+3. `block.parentHash` : The hash of the parent block of the block.
+
+### Custom Execution Logs
+
+The `emit` variable passed to a hook is a method that can be used to record custom execution logs (later accessible at [`block.hooksLogs`](/build/framework/block)).
+
+Example usage:
+
+```ts [hooks.ts]
+const checkEven: Hook<CounterState> = {
+  // [!code word:emit]
+  handler: ({ state, emit }) => {
+    if (state % 2 === 0) {
+      emit({ name: "is_even", value: state });
+    }
+    return state;
+  },
+};
+```

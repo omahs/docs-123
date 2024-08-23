@@ -2,11 +2,33 @@
 
 The `register` command is the most crucial command in the Stackr SDK. It is used to register your Micro-Rollup with the Stackr on-chain registry.
 
-:::warning
-Any application must be registered before beginning development as the Stackr-SDK uses the `AppInbox` contract address to function internally.
+:::info
+**Few details to note**
+
+- You don't need to register your application during development with the Stackr SDK.
+- It's recommended to develop and test your application in sandbox mode.
+- It's recommended to register your application only once you are done with the development.
+- After registration and deployment, if you make any changes to the genesis state or state machine code, you'd need to re-register and re-deploy your application.
 :::
 
 ## Usage
+
+```bash
+» stackr register --help
+USAGE
+  $ stackr register [--envFile <value>] [--privateKey <value>]
+
+FLAGS
+  --envFile=<value>     [default: .env] Path to the .env file
+  --privateKey=<value>  Private key of the account to be used to register the contract
+
+EXAMPLES
+  $ stackr register
+
+  $ stackr register --privateKey <privateKey> --envFile <path>
+```
+
+## Example
 
 ```bash
 npx @stackr/cli@latest register
@@ -16,22 +38,22 @@ This command reads your `stackr.config.json` file for project details and sends 
 
 ### Deployment cost
 
-In addition to gas fees, The deployment cost for the `AppInbox` contract is 0.1 ETH. Make sure you have enough balance in your account to deploy the contract. This ETH is sent to the Vulcan operator.
+In addition to gas fees, the deployment cost for the `AppInbox` contract is 0.001 ETH. Make sure you have enough balance in your account to deploy the contract. This ETH is sent to the Vulcan operator.
 
 We have kept this fees in this initial phase to prevent spamming and to ensure that the operator has enough funds to run the network.
 
 :::info
-The deployment fees is dynamic and increases with the number of applications deployed on the network. if the same app operator tries to deploy more than 10 applications, the fees will become 0.05 ETH for each new application.
+The deployment fees is dynamic and increases with the number of applications deployed on the network. If the same app operator tries to deploy more than 10 applications, the fees will become 0.005 ETH for each new application.
 :::
 
-## Output
+### Output
 
-```bash
+```bash [terminal]
 ✔ 📝 Registered application on registry
 ✔ 🧰 Updated deployment.json
 ```
 
-Once the registration is successful, a new `deployment.json` file is created in the root of your project directory. This file looks like this -
+Once the registration is successful, a new `deployment.json` file is created in the root of your project directory. This file looks like this:
 
 ```json [deployment.json]
 {

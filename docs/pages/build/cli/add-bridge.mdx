@@ -5,18 +5,40 @@ The `add bridge` command is used to set the Bridge contract in your AppInbox on-
 ## Usage
 
 ```bash
+» stackr add bridge --help                                                                                                                             
+USAGE
+  $ stackr add [ENTITY] [CONTRACT] [--envFile <value>]
+
+ARGUMENTS
+  ENTITY    (bridge|hook) Entity to add to your App Inbox
+  CONTRACT  Contract Address of the entity to add to your App Inbox
+
+FLAGS
+  --envFile=<value>  [default: .env] Path to the .env file
+
+EXAMPLES
+  $ stackr add bridge 0x1234567890abcdef1234567890abcdef12345678
+
+  $ stackr add hook 0x1234567890abcdef1234567890abcdef12345678
+
+  $ stackr add hook 0x1234567890abcdef1234567890abcdef12345678 --envFile=<relative path to file>
+```
+
+## Example
+
+```bash
 npx @stackr/cli@latest add bridge
 ```
 
-## Output
-
 You'll be prompted to enter your bridge address.
+
 ```bash [terminal]
 ? Bridge Contract Address
 ```
 Enter the address and hit enter. 
 
-If it passes all the checks 
+Output if it passes all the checks:
+
 ```bash [terminal]
 ✔ 🌉 Succesfully added bridge contract to AppInbox
 ```

@@ -6,7 +6,6 @@ export default defineConfig({
   sponsors: [
     {
       name: "Stackr Docs",
-      height: 150,
       items: [
         [
           {
@@ -37,7 +36,7 @@ export default defineConfig({
       link: "https://litepaper.stf.xyz",
     },
     {
-      text: "v0.5.0",
+      text: "v0.5.3",
       items: [
         {
           text: "Changelog",
@@ -207,6 +206,10 @@ export default defineConfig({
                 text: "Let's run it",
                 link: "/build/zero-to-one/run-it",
               },
+              {
+                text: "Registration and Deployment",
+                link: "/build/zero-to-one/registration-and-deployment",
+              },
             ],
           },
           {
@@ -214,7 +217,7 @@ export default defineConfig({
             link: "/build/development-paradigm",
           },
           {
-            text: "Configuration",
+            text: "Network Configuration",
             link: "/build/references/providers-and-rpc",
           },
           {
@@ -300,10 +303,6 @@ export default defineConfig({
                 text: "Block Execution Hooks",
                 link: "/build/framework/state-machine/block-hooks",
               },
-              {
-                text: "Global Variables",
-                link: "/build/framework/global-variables",
-              },
             ],
           },
           {
@@ -376,6 +375,10 @@ export default defineConfig({
             link: "/build/cli/init",
           },
           {
+            text: "Compile",
+            link: "/build/cli/compile",
+          },
+          {
             text: "Register",
             link: "/build/cli/register",
           },
@@ -386,6 +389,18 @@ export default defineConfig({
           {
             text: "Add Bridge",
             link: "/build/cli/add-bridge",
+          },
+          {
+            text: "Add Hook",
+            link: "/build/cli/add-hook",
+          },
+          {
+            text: "Transfer Ownership",
+            link: "/build/cli/transfer-ownership",
+          },
+          {
+            text: "Verify",
+            link: "/build/cli/verify",
           },
         ],
       },
@@ -410,6 +425,10 @@ export default defineConfig({
           {
             text: "Check your Binaries",
             link: "/build/guides/checking-your-binaries",
+          },
+          {
+            text: "Checking data on DA",
+            link: "/build/guides/checking-data-da",
           },
         ],
       },

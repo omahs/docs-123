@@ -25,6 +25,31 @@ rollup.events.subscribe(ConfirmationEvents.C0, (args) => { // [!code focus]
 }); // [!code focus]
 ```
 
+## Unsubscribing from events
+
+You can unsubscribe from an existing event subscription like this
+
+{/* prettier-ignore */}
+```ts
+const listener = (args) => {...};
+rollup.events.subscribe(ConfirmationEvents.C0, listener); // previously subscribed event
+
+/**
+ * Some logic in between
+ */
+
+rollup.events.unsubscribe(ConfirmationEvents.C0, listener); // [!code focus]
+```
+
+## Inspecting active subscriptions
+
+You can inspect all active subscriptions for a particular event like this
+
+{/* prettier-ignore */}
+```ts
+const listeners: { name: string, code: string }[] = rollup.events.getListeners(ConfirmationEvents.C0);
+```
+
 ## Event Types and Arguments
 
 This framework supports a variety of events that cover different aspects of the Micro-Rollup's operation, from action submission to block acknowledgment by the Vulcan system.
@@ -209,10 +234,13 @@ Triggered when a block is executed.
 
 **Event Arguments:** `ExecuteBlockEventArgs`
 
+- `previousState`: Previous state before execution.
 - `state`: Current state after execution.
+- `previousStateRoot`: Root hash of the previous state.
 - `stateRoot`: Root hash of the state.
 - `actionHashes`: List of hashes of executed actions.
-- `executionHooks`: string[][];
+- `executionHooks`: List of list of pre and post hooks that were executed as part of this block.
+- `executionHooksLogs`: Logs emitted from block hooks.
 
 ### `ExecutorEvents.EXECUTE_HOOK`
 
@@ -223,7 +251,10 @@ Triggered when a hook is executed.
 - `type`: Type of the hook.
 - `hookName`: Name of the hook.
 - `blockInfo`: Information of the block is executed for.
-- `updateResults`: Results of the state update.
+  <<<<<<< HEAD
+- # `updateResults`: Results of the state update.
+- `updateResults`: Results of the state update containing `previousState`, `newState` and `logs`.
+  > > > > > > > main
 
 ### `ExecutorEvents.EXECUTE_ACTION`
 
@@ -234,7 +265,7 @@ Triggered when an action is executed.
 - `actionHash`: Hash of the action causing the state change.
 - `actionName`: Name of the action.
 - `payload`: Inputs of the action.
-- `updateResults`: Results of the state update.
+- `updateResults`: Results of the state update containing `previousState`, `newState` and `logs`.
 
 ## Chain Events
 

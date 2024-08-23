@@ -1,0 +1,59 @@
+import { Callout } from "vocs/components";
+
+# Checking data on DA
+
+Stackr posts the batched blocks to the DA layer as configured in the [stackr.config.ts](https://docs.stf.xyz/build/framework/config).
+
+The DA metadata from the `C3A` event can be used to form the DA explorer link and inspect the blob and data posted in it.
+
+:::steps
+
+## Retrieve DA metadata
+
+To retrieve the DA metadata for your block, either you can subscribe to the [C3A](/build/framework/events#confirmationeventsc3a) events by following the guide [here](/build/framework/events#subscribing-to-events) or can query blocks using [methods in chain object](/build/framework/micro-rollup-utils/#chain-interaction) or can directly [query actions](build/framework/micro-rollup-utils/#actionsqueryfilters-actionfilterparams-orderasc-boolean) which comes with their block and batch data.
+
+C3A events have an element `vulcanResponse` that contains the `daMetadata`. You can retrieve it as follows:
+
+```ts
+events.subscribe(ConfirmationEvents.C3A, (args) => {
+  const { vulcanResponse } = args;
+  const daMetadata = vulcanResponse?.batchInfo?.daMetadata; // [!code hl]
+});
+```
+
+## Creating the Explorer link
+
+Once you get your hands on `daMetadata`, it can now be used to form the DA Explorer link depending on the DA Provider and by extracting the respective arguments.
+
+An example of such process can be [seen in Comet's implementation](https://github.com/stackrlabs/comets/blob/5269291d7c1e2432efebe77e2b53280645e69366/game/src/components/past-games/view-metadata.tsx#L8).
+
+
+<Callout type="info">
+  We are using all the official explorer links for the DA providers. You can replace them with your custom explorer links if you have one.
+</Callout>
+
+Below is the process to form the explorer link for each DA provider, given `daMetadata` from Block.
+
+### Avail
+
+```
+// [!code word:${daMetadata.blockHeight}]
+// [!code word:${daMetadata.extIdx}]
+https://avail-turing.subscan.io/extrinsic/${daMetadata.blockHeight}-${daMetadata.extIdx}
+```
+
+### Celestia
+
+```
+// [!code word:${daMetadata.txHash}]
+https://mocha-4.celenium.io/tx/${daMetadata.txHash}
+```
+
+### Eigen
+
+```
+// [!code word:${daMetadata.requestID}]
+https://blobs-holesky.eigenda.xyz/blobs/${daMetadata.requestID}
+```
+
+::::

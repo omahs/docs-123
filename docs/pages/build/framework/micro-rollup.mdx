@@ -6,6 +6,7 @@ A micro-rollup is initialized this -
 
 ```ts [index.ts]
 import { MicroRollup } from "@stackr/sdk";
+/* ... other imports ... */
 
 const rollup = await MicroRollup({
   config: stackrConfig,
@@ -20,7 +21,7 @@ The Micro-rollup object takes in 3 main parameters -
 
 1. `config` - The stackr configuration object
 
-all the details that you set in the `stackr.config.ts` file is passed to the micro-rollup like this. It uses this configuration to set up the environment for the rollup and instantiate the Sequencer, Executor and Syncer.
+all the details that you set in the [`stackr.config.ts`](/build/framework/config) file is passed to the micro-rollup like this. It uses this configuration to set up the environment for the rollup and instantiate the Sequencer, Executor and Syncer.
 
 2. `actionSchemas` - The action schemas defined earlier
 
@@ -38,17 +39,6 @@ Currently the Micro-Rollup supports only 1 state machine. This will be extended 
 
 The Micro-Rollup object also takes in a few optional parameters
 
-1. `isSandbox` - A boolean flag to indicate if the rollup is running in a sandbox environment,
+1. `stfSchemaMap` - A map of the STF names to the schema objects. This is used to map the schemas to the state transitions of the rollup. Defining this allows validation on action submission and auto-fill in Playground.
 
-when running in a sandbox mode, the rollup creates a temporary database to store the state and the actions and the blocks are not sent to Vulcan for verification.
-This is useful for testing and debugging purposes
-
-2. `disableVulcanSync` - A boolean flag to indicate if the rollup should not sync with Vulcan. This happens by default in sandbox mode.
-
-3. `disableBuilder` - A boolean flag to indicate if the rollup should not use the builder to generate the blocks. This is useful for functionally generating blocks when needed. More about it in the next section.
-
-4. `disableL1Sync` - A boolean flag to indicate if the rollup should not sync with the L1 chain.
-
-5. `stfSchemaMap` - A map of the schema names to the schema objects. This is used to map the schema names to the state transitions of the rollup.
-
-6. `blockHooks` -  An object containing two keys `pre` and `post` both being ordered array of names of the `hooks` to execute with each block.
+2. `blockHooks` - An object containing two keys `pre` and `post` both being ordered array of names of the `hooks` to execute with each block.

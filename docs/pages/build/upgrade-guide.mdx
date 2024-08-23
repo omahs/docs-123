@@ -4,6 +4,19 @@ import { Callout } from "vocs/components";
 
 This page has instructions on upgrading your Micro-Rollup to a specific or latest versions of the Stackr SDK and CLI.
 
+## Upgrading to v0.5.2
+
+This release introduces some changes in [`StackrConfig`](/build/framework/config) and [`MicroRollup`](/build/framework/micro-rollup).
+
+1. In your `stackr.config.ts` file,
+
+- Remove the line which imports the `deployment.json` file. The file is now directly read by the SDK. If you renamed this file, specify the path in `deploymentFile` field.
+- Remove the `stackrApp` field.
+- Remove `domain.chainId` and `domain.verifyingContract` fields.
+- Rename `enableEmptyBlocks` to `allowEmptyBlocks` in `sequencer` field.
+
+2. If you are passing any of `isSandbox`, `disableBuilder`, `disableVulcanSync` or `disableL1Sync` arguments to `MicroRollup`, they should be moved to the config now, in corresponding sections.
+
 ## Upgrading to v0.5.0
 
 To upgrade your existing application to SDK version v0.5.0 from any older version, you need to perform a "squash fork". It basically is
@@ -31,7 +44,11 @@ $ npm install -g @stackr/cli
 
 3. In your `stackr.config.ts` file, rename the `batchSize` and `batchTime` fields to `blockSize` and `blockTime` respectively.
 
-4. Re-register and re-deploy your MRU as a new application.
+<<<<<<< HEAD 4. Re-register and re-deploy your MRU as a new application.
+======= 4. Update the `REGISTRY_CONTRACT` variable in your `.env` to point to the updated contract. Refer to [Network Configuration](/build/references/providers-and-rpc.mdx) for the new address.
+
+5. Re-register and re-deploy your MRU as a new application.
+   > > > > > > > main
 
 ```bash
 $ stackr register

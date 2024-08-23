@@ -1,0 +1,32 @@
+# `verify` [Verify a deployed app's binary]
+
+The `verify` command is used to verify that the source state machine binary matches with the registered AppInbox binary.
+
+## Usage
+
+```bash
+» stackr verify --help
+USAGE
+  $ stackr verify [APPINBOXCONTRACT]
+
+ARGUMENTS
+  APPINBOXCONTRACT  The address of the AppInbox contract. If not provided, the address will be read from the deployment.json file.
+
+EXAMPLES
+  $ stackr verify
+
+  $ stackr verify 0x1234567890abcdef1234567890abcdef12345678
+```
+
+## Example
+
+```bash
+$ npx @stackr/cli@latest verify
+```
+
+The AppInbox addresss will be read from the `deployment.json` file otherwise error would be thrown.
+
+Output if it passes all the checks:
+```bash [terminal]
+✔ 🔎 Verified source state machine binary!
+```

@@ -14,27 +14,74 @@ The sequencer module has the following parameters that are set in the `stackr.co
  sequencer: {
     blockSize: 16,
     blockTime: 10,
-    enableEmptyBlocks: true,
+    allowEmptyBlocks: true,
+    disableBuilder: false,
   },
 ```
 
-- `blockSize`: The number of actions that the sequencer picks up in a single block.
-- `blockTime`: The time interval after which the sequencer picks up the actions in a block.
-- `enableEmptyBlocks`: A flag to allow creation of empty blocks (the one with no actions).
+- `blockSize`: The number of actions that the sequencer picks up from the pool to build a block.
+- `blockTime`: The time interval after which the sequencer picks up actions from the pool to build a block.
+- `allowEmptyBlocks`: A flag to allow creation of empty blocks (the one with no actions). Defaults to `false`.
+- `disableBuilder`: A flag to indicate if the rollup should not use the builder to generate new blocks. This is useful for [functionally generating blocks](/build/framework/micro-rollup-utils#sequencertick) when needed. Defaults to `false`.
 
 ## Lazy blocks
 
-In the above example it means that the sequencer picks upto 16 actions every second and orders them in a block. If there are no actions in the pool then the sequencer does not create a block.
+In the above example, it means that the sequencer picks upto 16 actions every second and orders them in a block. If there are no actions in the pool then the sequencer does not create a block.
 
 If there are less than 16 actions in the pool when the timer expires then the sequencer picks up any remaining number of actions and creates a block.
 
 ## Ordering
 
-Currently the sequencer only supports FIFO (First In First Out) ordering of the actions. This means that the actions are ordered in the same order as they are received in the pool.
+The default sequencer strategy is FIFO (First In First Out) ordering of the actions. This means that the actions are ordered in the same order as they are received in the pool.
 
-## Custom Ordering Strategy (soon)
+## Custom Ordering Strategy
 
-In the future we plan to add support for custom ordering strategies that can be set. More details on this soon.
+Stackr provides primitives for defining custom ordering strategies.
+
+This is done by defining a new class that extends `BaseStrategy` class with the custom ordering logic implemented inside `getOrderedActions` method. For example:
+
+:::code-group
+
+```ts [strategy.ts]
+import { BaseStrategy, Action } from "@stackr/sdk";
+
+/**
+ * RandomStrategy is responsible for ordering actions in a random order.
+ */
+export class RandomStrategy extends BaseStrategy {
+  /**
+   * Create a new instance of RandomStrategy
+   */
+  constructor() {
+    super("RandomOrder");
+  }
+
+  /**
+   * Custom ordering logic for actions
+   * returns the actions in a random order
+   * @param actions - Unordered List of actions
+   * @returns - Ordered list of actions
+   */
+  async getOrderedActions(actions: Action[]): Promise<Action[]> {
+    return Promise.resolve(
+      actions.sort(() => {
+        return 0.5 - Math.random();
+      })
+    );
+  }
+}
+```
+
+```ts [rollup.ts]
+// use the custom strategy class in your Micro-Rollup
+rollup.sequencer.setStrategy(new RandomStrategy());
+```
+
+:::
+
+:::tip
+💡 Since `getOrderedActions` here is an async method, the possibilities are endless. For instance, you've the ability to outsource the ordering rights to third parties (See [Orderbook DEX MRU](https://github.com/eshaan7/orderbook-dex-mru) for example implementation of this).
+:::
 
 ## Shared Sequencing (soon)
 

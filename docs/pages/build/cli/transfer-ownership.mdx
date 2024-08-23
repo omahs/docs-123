@@ -1,0 +1,45 @@
+# `transfer-ownership` [Transfer ownership of AppInbox]
+
+The `transfer-ownership` command is used to transfer ownership of the AppInbox contract to a new address.
+
+## Usage
+
+```bash
+» stackr transfer-ownership --help
+USAGE
+  $ stackr transfer-ownership [NEWOWNER] [--envFile <value>] [--privateKey <value>]
+
+ARGUMENTS
+  NEWOWNER  Address of the new owner of the contract
+
+FLAGS
+  --envFile=<value>     [default: .env] Path to the .env file
+  --privateKey=<value>  Private key of the current owner of the contract
+
+EXAMPLES
+  $ stackr transfer-ownership <new-address>
+
+  $ stackr transfer-ownership <new-address> --privateKey <privateKey>
+
+  $ stackr transfer-ownership <new-address> --envFile <relative path to file>
+```
+
+## Example
+
+```bash
+npx @stackr/cli@latest transfer-ownership
+```
+
+You'll be prompted to enter the address of the new owner.
+
+```bash [terminal]
+? Enter the address of the new owner
+```
+
+Enter the address and hit enter. 
+
+Output if it passes all the checks:
+
+```bash [terminal]
+✔ ↗️ Transferred ownership to new owner
+```

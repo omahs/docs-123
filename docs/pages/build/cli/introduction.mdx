@@ -1,6 +1,6 @@
 # CLI [The entry point to Stackr SDK]
 
-Stackr SDK comes with a CLI that allows you to interact with the SDK from the command line. The CLI is the entry point to the SDK and provides a set of commands to help you manage your projects.
+Stackr SDK comes with a [CLI](https://www.npmjs.com/package/@stackr/cli) that allows you to interact with the SDK from the command line. The CLI is the entry point to the SDK and provides a set of commands to help you manage your projects.
 
 It is written in TypeScript and can be installed globally using npm or yarn.
 
@@ -20,16 +20,18 @@ running this should display the help message for the CLI like this -
 Stackr CLI
 
 VERSION
-  @stackr/cli/0.0.12 darwin-arm64 node-v20.11.1
+  @stackr/cli/0.1.2 darwin-arm64 node-v20.11.1
 
 USAGE
   $ stackr [COMMAND]
 
 COMMANDS
-  init      Init an MRU from templates
-  compile   Compile yours Stackr State Machines to portable WASM modules.
-  deploy    Deploy your MRU to Vulcan
-  add       Sets the bridge or hook address to the AppInbox contract of your MRU
-  help      Display help for stackr.
-  register  Register your MicroRollup with Stackr
+  add                 Adds Bridge or Hook to the AppInbox contract of your MRU
+  compile             Compile yours Stackr State Machines to portable WASM modules.
+  deploy              Deploy your MRU to Vulcan
+  help                Display help for stackr.
+  init                Init an MRU from templates
+  register            Register your MicroRollup with Stackr
+  transfer-ownership  Transfer ownership of the AppInbox contract to a new address
+  verify              Verify that the source state machine binary matches with the registered AppInbox binary
 ```
