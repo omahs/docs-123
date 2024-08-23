@@ -1,0 +1,334 @@
+# Cross Chain Bridging Integration
+
+## Overview
+
+This guide will help you set up a cross-chain bridge for message passing/token bridging from any other chain to Stackr’s Micro-rollups.
+
+GMP(General Message Passing) demonstrates passing messages from any other chain to Stackr Micro-rollups, while the Token Bridge demonstrates bridging tokens from any
+other chains to Stackr Micro-rollups.
+
+In this guide, we will use three protocols to bridge tokens or pass messages from other chains to the Micro-rollup, including:
+
+- [**Hyperlane**](https://docs.hyperlane.xyz/docs/intro)
+- [**Axelar**](https://docs.axelar.dev/)
+- [**LayerZero**](https://docs.layerzero.network/v2)
+
+## What, Why and How of Cross Chain Bridging
+
+Micro-rollups are standalone rollups which perform the computations off-chain and have an applnbox deployed on L1, where the transactions get settled. This design allows transactions to be processed off-chain but settled securely on L1, significantly reducing costs and improving user experience compared to direct L1 interactions.
+
+But, unlike traditional Layer 2 solutions, Micro-rollups don't operate as separate blockchains.
+
+So, the question occurs, what if someone wants to bring on-chain data from any other chains to the Micro-rollup to perform any action? or maybe wants to bring some liquidity from any other chain to the Micro-rollup? That’s where cross chain bridging comes in place.
+
+More on how to perform bridging in Micro-rollup can be found here: [Bridging](/build/plugins/bridging)
+
+## Prerequisites
+
+Before you begin this tutorial, please ensure you go through the following:
+
+- Basic knowledge of the Stackr Micro rollup framework: [Zero to One](/build/zero-to-one/getting-started)
+- Basic knowledge of how cross chain bridging works: [What Is a Cross-Chain Bridge?](https://chain.link/education-hub/cross-chain-bridge)
+
+## Building your bridges
+
+### 1. Bridges
+
+Bridges works in a way, where the message is sent from origin chain, which is picked up by the provider relayer and passed to the contract on the destination chain.
+Depending on the protocol, different functions are used to do so.
+
+We will modify these functions to handle cross chain bridging to the micro-rollup.
+
+##### Hyperlane
+
+For **Hyperlane**, the 2 functions required are:
+
+- `dispatch`: Contracts can send interchain messages by calling the dispatch function on the Mailbox.
+- `handle`: Contracts can receive interchain messages by implementing the handle function.
+
+```solidity
+function transferRemote(
+        uint32 _destination,
+        address _recipient,
+        address _token,
+        uint256 _amount,
+        address _to
+    ) external payable {
+        require(_amount > 0, "Amount must be greater than 0");
+
+        uint256 fee = estimateTransferRemoteFee(
+            _destination,
+            _recipient,
+            _token,
+            _amount
+        );
+        require(msg.value >= fee, "Insufficient fee");
+
+        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+
+        mailbox.dispatch{value: msg.value}(
+            _destination,
+            TypeCasts.addressToBytes32(_recipient),
+            abi.encode(_token, _amount, _to)
+        );
+    }
+
+function handle(
+        uint32 _origin,
+        bytes32 _sender,
+        bytes calldata _message
+    ) external payable virtual override onlyMailbox {
+        (address token, uint256 amount, address to) = abi.decode(
+            _message,
+            (address, uint256, address)
+        );
+        address recipient = _sender.bytes32ToAddress();
+
+        if (bridgeDomain == MRU_DOMAIN) {
+            require(appInbox != address(0), "AppInbox not set");
+            bytes memory mruMessage = abi.encode(token, to, amount);
+            bytes32 identifier = keccak256("BRIDGE_TOKEN");
+            ITicketFactory(appInbox).createTicket(
+                identifier,
+                to,
+                mruMessage
+            );
+        }
+    }
+```
+
+The `transferRemote` function —
+
+1. Gets and ensures that the quoted fee must be passed as value to the dispatch call to ensure it does not revert.
+2. Tranfers the ERC20 tokens from user to the token bridge contract.
+3. Makes the `dispatch` call by calling the `mailbox` with the `message` as encoded data and passing the quoted fee.
+
+The `handle` function —
+
+1. Decodes the message passed by the relayer from the `transferRemote` function.
+2. Checks if the appInbox for the deployed contract is not a zero address.
+3. Creates the ticket by calling the `AppInbox` with the ticket `identifier`, `msg.sender`, and the `message` to be attached to the ticket.
+
+##### Axelar
+
+For **Axelar**, the 2 functions required are:
+
+- `callContract`: to send messages without tokens from origin chain.
+- `_execute`: to recieve messages on the destination chain.
+
+```solidity
+function sendMessage(
+        string calldata _destinationChain,
+        string calldata _destinationAddress,
+        uint256 _message
+    ) external payable {
+        uint256 fee = estimateGasFee(_destinationChain, _destinationAddress, _message);
+        require(msg.value > fee, "Not enough gas fees");
+
+        bytes memory payload = abi.encode(msg.sender, _message);
+
+        gasService.payGas{value: msg.value}(
+            address(this),
+            _destinationChain,
+            _destinationAddress,
+            payload,
+            GAS_LIMIT,
+            true,
+            msg.sender,
+            new bytes(0)
+        );
+
+        gateway.callContract(_destinationChain, _destinationAddress, payload);
+    }
+
+    function _execute(
+        string calldata _sourceChain,
+        string calldata _sourceAddress,
+        bytes calldata _payload
+    ) internal override {
+        (address sender, uint256 message) = abi.decode(
+            _payload,
+            (address, uint256)
+        );
+
+        require(appInbox != address(0), "AppInbox not set");
+        bytes32 identifier = keccak256("AXELAR_MESSAGE");
+        bytes memory mruMessage = abi.encode(message);
+        ITicketFactory(appInbox).createTicket(identifier, sender, mruMessage);
+    }
+```
+
+The `sendMessage` function —
+
+1. Gets and ensures that the estimated gas fee must be passed as value to the `payGas` call to ensure it does not revert.
+2. Creates the paload to be passed with the `callContract` function
+3. Makes the `callContract` call by calling the `gateway` with the `_destinationChain`, `_destinationAddress` and prepared payload.
+
+The `_execute` function —
+
+1. Decodes the message passed by the relayer from the `sendMessage` function.
+2. Checks if the appInbox for the deployed contract is not a zero address.
+3. Creates the ticket by calling the `AppInbox` with the ticket `identifier`, `msg.sender`, and the `message` to be attached to the ticket.
+
+##### LayerZero
+
+For **LayerZero**, the 2 functions required are:
+
+- `_lzSend`: to send messages from origin chain.
+- `_lzReceive`: to recieve messages on the destination chain.
+
+```solidity
+function sendMessage(
+        uint32 _dstEid,
+        uint256 _message,
+        bytes calldata _options
+    ) external payable {
+        bytes memory payload = abi.encode(msg.sender, _message);
+        uint256 fee = estimateFee(_dstEid, _message, _options);
+        require(msg.value >= fee, "Insufficient fee");
+        _lzSend(
+            _dstEid,
+            payload,
+            _options,
+            MessagingFee(msg.value, 0),
+            payable(msg.sender)
+        );
+    }
+
+    function _lzReceive(
+        Origin calldata _origin,
+        bytes32 _guid,
+        bytes calldata _message,
+        address,
+        bytes calldata
+    ) internal override {
+        (address sender, uint256 message) = abi.decode(
+            _message,
+            (address, uint256)
+        );
+
+        require(appInbox != address(0), "AppInbox not set");
+        bytes32 identifier = keccak256("LZ_MESSAGE");
+        bytes memory mruMessage = abi.encode(message);
+        ITicketFactory(appInbox).createTicket(identifier, sender, mruMessage);
+    }
+```
+
+The `sendMessage` function —
+
+1. Gets and ensures that the estimated gas fee must be passed as value to the `_lzSend` call to ensure it does not revert.
+2. Creates the paload to be passed with the `callContract` function
+3. Makes the `_lzSend` call with the `_dstEid`, `_options`, prepared payload and other required parameters.
+
+The `_lzReceive` function —
+
+1. Decodes the message passed by the relayer from the `_lzSend` function.
+2. Checks if the appInbox for the deployed contract is not a zero address.
+3. Creates the ticket by calling the `AppInbox` with the ticket `identifier`, `msg.sender`, and the `message` to be attached to the ticket.
+
+### 2. Initialising up the MRU
+
+Initialise the MRU using the `@stackr/cli` and choosing the Bridge template (for **Hyperlane**) or Counter template (for **Axelar/LayerZero**), and choosing a name for the project.
+
+```bash [Terminal]
+$ npx @stackr/cli@latest init
+
+? Pick a template > Bridge/Counter
+? Project Name > cross-chain-bridging
+
+$ cd cross-chain-bridging
+```
+
+After the contracts are deployed on both chains and the MRU is registered, set the bridge contract address in the AppInbox so that it can create a ticket.
+
+Run the CLI command:
+
+```bash [terminal]
+npx @stackr/cli add bridge
+```
+
+You'll be prompted with the bridge address:
+
+```bash [terminal]
+? Bridge Contract Address
+```
+
+Enter your deployed bridge contract address (sepolia) above and you're set! The CLI will update the `Bridge` contract address inside the `AppInbox`.
+
+### 3. Setting up Bridge ticket handler
+
+Next, we need to update/add the bridge ticket handler of the MRU to receive messages and perform actions accordingly.
+
+##### For Axelar/LayerZero (GMP)
+
+```ts [index.ts]
+Bridge.init(mru, {
+  handlers: {
+    //@note: This is for Axelar Bridge, for the LayerZeroBridge, LZ_MESSAGE can be used.
+    AXELAR_MESSAGE: async (args) => {
+      console.log("args data:", args.data);
+      const [timestamp] = abiCoder.decode(["uint256"], args.data);
+      console.log("Decoded timestamp:", timestamp);
+      const timestampNumber = Number(timestamp);
+      const inputs = {
+        timestamp: timestampNumber,
+      };
+      const signature = await signMessage(
+        operator,
+        UpdateCounterSchema,
+        inputs
+      );
+      const incrementAction = UpdateCounterSchema.actionFrom({
+        inputs,
+        signature,
+        msgSender: operator.address,
+      });
+
+      return {
+        transitionName: "increment",
+        action: incrementAction,
+      };
+    },
+  },
+});
+```
+
+#### For Hyperlane (Token Bridging)
+
+```ts [index.ts]
+Bridge.init(rollup, {
+  handlers: {
+    BRIDGE_TOKEN: async (args) => {
+      console.log("args data:", args.data);
+      const [_token, _to, _amount] = abiCoder.decode(
+        ["address", "address", "uint256"],
+        args.data
+      );
+      console.log("Minting token to", _to, "with amount", Number(_amount));
+      const inputs = {
+        address: _to,
+        amount: Number(formatEther(_amount)),
+      };
+
+      console.log("inputs:", inputs);
+      const signature = await signMessage(operator, MintTokenSchema, inputs);
+      const action = MintTokenSchema.actionFrom({
+        inputs,
+        signature,
+        msgSender: operator.address,
+      });
+
+      return {
+        transitionName: "mintToken",
+        action: action,
+      };
+    },
+  },
+});
+```
+
+## Next Steps
+
+That's it! You've successfuly implemented cross chain bridging in your micro-rollup. You just need to deploy these contracts on both the chains (the one you want to pass messages from and the chain on which MRU is deployed on). You can extend these examples to do arbitrary message passing or token bridging.
+
+For detailed guide, complete examples and implementation details, refer to this repository: [Cross-chain-Bridging](https://github.com/Architsharma7/Bridges-Stackr)
