@@ -2,12 +2,10 @@
 
 A serialized action is an action that encapsulates the execution and confirmation status along with logs and errors encountered during the execution of the acton.
 
-<<<<<<< HEAD
-=======
 ## Serialized Action
->>>>>>> main
 
 A serialized action looks like this
+
 ```typescript
 interface SerializedAction {
   name: string;
@@ -22,12 +20,13 @@ interface SerializedAction {
   errors: ExecutionError[] | null;
 }
 ```
+
 - `name`: The name of the action sent.
 - `signature`: The signature of the action. This is used to authenticate the user who signed the action.
 - `msgSender`: The address of the user who sent the action.
 - `payload`: The data of the action. This is the actual data that the action is supposed to mutate the state with.
-- `executionStatus`: The status of the execution of the action (Defaults to ``CREATED``). More on this [here](/build/framework/action/execution-status).
-- `confirmationStatus`: The confirmation status for the action (Defaults to ``CX``). More on this [here](/build/framework/action/confirmation-status).
+- `executionStatus`: The status of the execution of the action (Defaults to `CREATED`). More on this [here](/build/framework/action/execution-status).
+- `confirmationStatus`: The confirmation status for the action (Defaults to `CX`). More on this [here](/build/framework/action/confirmation-status).
 - `isReverted`: A boolean flag to indicate if the action is reverted or not at the execution level.
 - `hash`: The keccak256 hash of the action.
 - `logs`: The logs generated for the action's execution.
@@ -39,17 +38,15 @@ Every action contains Logs and Errors generated during the action execution.
 
 ### `action.logs`
 
-Returns the execution logs for the action. If not null, the execution succeeded without any errors. It is null if the action has not yet been executed. Here the action is of type ``SerializedAction``.
+Returns the execution logs for the action. If not null, the execution succeeded without any errors. It is null if the action has not yet been executed. Here the action is of type `SerializedAction`.
 
 **Type:** `ExecutionLog[] | null`
 
 ### `action.errors`
 
-Returns any errors that occurred during the execution of the action. It is null if the action has not yet been executed. Here the action is of type ``SerializedAction``.
+Returns any errors that occurred during the execution of the action. It is null if the action has not yet been executed. Here the action is of type `SerializedAction`.
 
 **Type:** `ExecutionError[] | null;`
-<<<<<<< HEAD
-=======
 
 ## Serialized Block
 
@@ -70,4 +67,3 @@ interface SerializedActionAndBlock extends SerializedAction {
 ```
 
 These fields are described in the [Block](/build/framework/block) section.
->>>>>>> main
