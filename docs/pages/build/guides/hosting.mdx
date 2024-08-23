@@ -18,13 +18,13 @@ Fly.io is a cloud platform that allows developers to deploy and run applications
 
 1. `cd` into your Micro-Rollup repository
 2. Login to `fly.io`
-```bash copy
+```bash [Terminal]
 fly auth signup
-fly auth login // if you are already logged in
+fly auth login # if you are already logged in
 ```
 
 3. Copy this `fly.toml` file into your root directory.
-```bash [fly.toml]
+```toml [fly.toml]
 app = '<name>'
 primary_region = 'atl'
 
@@ -87,6 +87,44 @@ Railway is a modern cloud platform that offers an easy and efficient way to depl
 
 ### Steps
 
+1. `cd` into your Micro-Rollup repository
+2. Change your `stackr.config.ts` to use `postgres` as the database. Railway supports Postgres and MySQL.
+3. Install PostgreSQL client
+```bash [Terminal]
+npm install pg --save
+```
+4. Copy this `railway.json` file into your root directory.
+```json [railway.json]
+{
+    "$schema": "https://railway.app/railway.schema.json",
+    "build": {
+        "builder": "DOCKERFILE",
+        "dockerfilePath": "./Dockerfile"
+    },
+    "deploy": {
+        "runtime": "V2",
+        "numReplicas": 1,
+        "sleepApplication": false,
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+    }
+}
+```
+3. Commit and push your changes to GitHub.
+4. Log into your Railway account and link your GitHub repository by following this [guide](https://docs.railway.app/quick-start#deploying-your-project---from-github).
+Do not deploy your project yet. Instead choose the option to `Add variables`.
+5. When your project canvas opens, on the right, start adding variables from your `.env` file. (Copy-pasting with the raw editor is faster)
+6. For the `DATABASE_URI` variable, use the value:
+```bash
+DATABASE_URI=${{Postgres.DATABASE_URL}}
+```
+6. Now, click on the `Create` button on the top right and create a new Postgres database service.
+<img src="/assets/postgres-db.png" alt="Choose DB" />
+<img src="/assets/postgres-railway.png" alt="Choose PostgreSQL" />
+7. Once the DB service is created, your micro-rollup should be visually connected to the DB service.
+8. Deploy your project with all the new changes.
+
+
 ## Using EC2
 
 Amazon EC2 (Elastic Compute Cloud) is a web service that provides secure, resizable compute capacity in the cloud.
@@ -102,10 +140,10 @@ Amazon EC2 (Elastic Compute Cloud) is a web service that provides secure, resiza
 1. Follow this [guide](https://hostadvice.com/how-to/web-hosting/containers/how-to-use-docker-containers-with-aws-ec2/) to spin up an EC2 instance with Docker enabled.
 2. Build and run your rollup's docker container by following the instructions [here](/build/zero-to-one/run-it).
 
-
-## Happy rolling! 🛼
-
 ## Hosting tips
 - Check your `.env` to make sure your variables are set properly and pointing to our [Sepolia network](/build/references/providers-and-rpc).
 - Check your `stackr.config.ts` to make sure you are not deploying in Sandbox mode.
-- Try to create a custom domain and point it to your hosted instance.
+- Next step could be to create a custom domain and point it to your hosted instance.
+
+Feel free to contact the Stackr team if you have any questions.
+Happy rolling! 🛼
