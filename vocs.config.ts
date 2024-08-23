@@ -238,24 +238,6 @@ export default defineConfig({
             link: "/build/guides/community-integrations",
           },
           {
-            text: "Integration Guides",
-            collapsed: true,
-            items: [
-              {
-                text: "XMTP Integration",
-                link: "/build/guides/integrations/xmtp",
-              },
-              {
-                text: "Cross Chain Bridging Integration",
-                link: "/build/guides/integrations/cross-chain-bridging",
-              },
-              {
-                text: "Lit Protocol Integration",
-                link: "/build/guides/integrations/lit-protocol",
-              },
-            ],
-          },
-          {
             text: "Tutorials",
             collapsed: true,
             items: [
