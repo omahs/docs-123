@@ -184,8 +184,8 @@ export default defineConfig({
         text: "",
         items: [
           {
-            "text": "What to build",
-            "link": "/build/what-to-build",
+            text: "What to build",
+            link: "/build/what-to-build",
           },
           {
             text: "Zero-to-One",
@@ -245,6 +245,14 @@ export default defineConfig({
               {
                 text: "Lit Protocol Integration",
                 link: "/build/guides/integrations/lit-protocol",
+              },
+              {
+                text: "Oracles ( Chainlink , Pyth & Chronicle )",
+                link: "/build/guides/integrations/oracles",
+              },
+              {
+                text: "Wallet providers ( Privy , Dynamic & Web3Auth",
+                link: "/build/guides/integrations/wallet-providers",
               },
             ],
           },
