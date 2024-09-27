@@ -2,11 +2,12 @@
 
 The `deploy` command is used to deploy your Micro-Rollup to the Vulcan network as well as set the initial genesis conditions on-chain.
 
-It performs the following 3 operations:
+It performs the following 4 operations:
 
-1. Extracts and compiles the State Machine into Wasm ([`compile`](/build/cli/compile) command)
-2. Creates a commitment of the Wasm (binary) and genesis state (JSON), signs it using the operator private key and sends it to the `AppInbox` contract to initialize the application
-3. Uploads the Wasm binary to Vulcan.
+1. Reads the `stackr.config.ts` file for your project's configuration such as the operator account, L1 and Vulcan RPC URLs, and `deployment.json` file for your project's registration details such as the app ID and app inbox contract address.
+2. Extracts and compiles the State Machine into Wasm ([`compile`](/build/cli/compile) command)
+3. Creates a commitment of the Wasm (binary) and genesis state (JSON), signs it using the operator private key and sends it to the `AppInbox` contract to initialize the application
+4. Uploads the Wasm binary to Vulcan.
 
 :::warning
 After deployment, if you make any changes to the genesis state or state machine code, you'd need to re-register and re-deploy your application.
