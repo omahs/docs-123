@@ -61,13 +61,79 @@ Get started by running the following commands:
 
 ```
 
+Now that we have a local copy of a micro-rollup project, let's understand its architecture.
+
+## Project Structure
+
+Our pre-defined project templates use the default and recommended project structure which is as given:
+
+```bash
+├── src
+│   ├── stackr
+│   │   ├── machine.ts
+│   │   ├── mru.ts
+│   │   ├── state.ts
+│   │   ├── transitions.ts
+│   │   └── hooks.ts
+│   └── index.ts
+│── .env.example
+└── stackr.config.ts
+```
+
+- The root directory contains configuration files of your project.
+  - `.env.example` is a template containing the necessary environment variables required by the micro-rollup.
+  - `stackr.config.ts` exports the [`StackrConfig`](/build/framework/config) object defining the configuration of the your micro-rollup.
+- The `src` directory contains source code files of your project.
+  - `index.ts` is the main entrypoint file containing code to run your project.
+- The `src/stackr` directory contains the source code files specific to defining a micro-rollup with Stackr SDK.
+
+  - `machine.ts` contains the custom state machine class (extending [`StateMachine`](/build/framework/state-machine/introduction)) instance for your app.
+
+    - Please make sure to export the `StateMachine` object from this file in one of the following ways:
+
+    :::code-group
+
+    ```ts [machine.ts (declaration export)]
+    export const myMachine = new StateMachine({ ... });
+    ```
+
+    ```ts [machine.ts (named export)]
+    const myMachine = new StateMachine({ ... });
+
+    export { myMachine };
+    ```
+
+    ```ts [machine.ts (default export)]
+    const myMachine = new StateMachine({ ... });
+
+    export default myMachine;
+    ```
+
+    :::
+
+  - `state.ts` exports the custom state class (extending [`State`](/build/framework/state-machine/state)) for your micro-rollup.
+  - `transitions.ts` exports the [State Transition Functions](/build/framework/state-machine/state-transitions) (as `Transitions`) for your micro-rollup. This file may be omitted if no transitions are defined.
+  - `hooks.ts` exports the [Block Hooks](/build/framework/state-machine/block-hooks) (as `Hooks`) for your micro-rollup. This file may be omitted if no hooks are defined.
+  - `mru.ts` exports the [`MicroRollup`](/build/framework/micro-rollup) instance which is the controller for your micro-rollup.
+
+:::info
+Note that:
+
+1. It's recommended that all 4 of the above files shouldn't import anything from `@stackr/sdk` and instead use `@stackr/sdk/machine` for the `StateMachine`, `State`, `Transitions`, `Hooks` and other utility classes.
+2. We don't enforce any specific restrictions on the naming of the files, but keeping the above 4 files in the `src/stackr` directory is recommended.
+3. It's recommended to not keep the `State` and `StateMachine` classes in the same file as this would cause circular-import issue when importing the `State` class for writing STFs in `transitions.ts`.
+:::
+
 ## Setting up your config
+
+Since we are using the "Counter" template for this tutorial, the source code is already there so we only need to setup the micro-rollup configuration before we can run it.
 
 ### Setup `.env`
 
 - Let's `cd` into the project directory and first copy the `.env.example` file to `.env`.
 - Update the following values in the `.env` file.
-  - You can get the latest values listed in the [Providers and RPCs](/build/references/providers-and-rpc) page.
+  - `PRIVATE_KEY` is the hex-encoded private key of the Ethereum address that will act as the rollup operator. This private key is used for registration and deployment of your micro-rollup, and to sign on incoming actions and proposed blocks.
+  - For the other fields, you can get the latest values listed in the [Providers and RPCs](/build/references/providers-and-rpc) page.
 
 ```bash [.env]
 PRIVATE_KEY=<PRIVATE_KEY>
@@ -78,90 +144,54 @@ DATABASE_URI=<DATABASE_URI>
 ```
 
 :::info
-`PRIVATE_KEY` is the private key of account you want to register and deploy the rollup with. This address acts as the Operator.
+Note that:
 
-We don't store your private key anywhere, it is stored in your local environment. It's only used to sign on incoming actions and proposed blocks.
+1. We don't store or upload your private key anywhere, it is stored only in your local environment.
+2. No paying transactions would be made from your private key in this tutorial so feel free to use any existing Ethereum account or create a new one without any ETH balance.
 :::
 
 ### Setup `stackr.config.ts`
 
 Now let's dive into the `stackr.config.ts` file.
 
-- By default, the micro-rollup is configured to run in Sandbox mode (`isSandbox`). This is explained in the next section.
-- The main properties you might wish to tune here are `blockSize` and `blockTime` of your micro-rollup.
-  You can also set `allowEmptyBlocks` to `true` if you want your micro-rollup to always produce blocks every `blockTime` milliseconds (even when there are no actions).
+- By default, the micro-rollup is configured to run in Sandbox mode. This will be explained in the next section.
   ```ts [stackr.config.ts]
-  sequencer: {
-    blockSize: 16,
-    blockTime: 10,
-    allowEmptyBlocks: true
-  }
+  const stackrConfig: StackrConfig = {
+    isSandbox: true,
+    /* ... */
+  };
   ```
-- The `domain` in the config is used to create EIP-712 Typed Signature over the inputs of actions. Feel free to tune this as per your requirements.
+- Tune the sequencer as per your needs.
+  - `blockSize`: The number of actions that the sequencer picks up from the pool to build a block.
+  - `blockTime`: The time interval (in milliseconds) after which the sequencer picks up actions from the pool to build a block.
+  - `allowEmptyBlocks`: A flag to allow creation of empty blocks every `blockTime` even when there are no actions. Defaults to `false`.
   ```ts [stackr.config.ts]
-  domain: {
-    name: "<APP_NAME>",
-    version: "<APP_VERSION>",
-    salt: "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-  }
+  const stackrConfig: StackrConfig = {
+    /* ... */
+    sequencer: {
+      blockSize: 16,
+      blockTime: 10,
+      allowEmptyBlocks: false,
+    },
+    /* ... */
+  };
+  ```
+- The `domain` object contains some fields for [EIP-712](https://eips.ethereum.org/EIPS/eip-712) domain definition.
+  - `name`: The name of the micro-rollup
+  - `version`: The version of the micro-rollup
+  - `salt`: A random salt value
+  ```ts [stackr.config.ts]
+  const stackrConfig: StackrConfig = {
+    /* ... */
+    domain: {
+      name: "<APP_NAME>",
+      version: "<APP_VERSION>",
+      salt: "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    },
+    /* ... */
+  };
   ```
 - You can refer to [Stackr Config](/build/framework/config) section for the explanation of every available configuration property.
-
-## Project Structure
-
-- The `src` directory contains the code for your application.
-- The `src/stackr` directory contains the code for the State Machines and State Transition Functions.
-
-We don't enforce any specific restrictions on the naming of the files, but keeping files related to the State Machines and STF in the `src/stackr` directory is recommended.
-
-```bash
-├── src
-│   ├── stackr
-│   │   ├── machine.ts
-│   │   ├── mru.ts
-│   │   ├── state.ts
-│   │   └── transitions.ts
-│   ├── index.ts
-│   ├── stackr.config.ts
-│   └── deployment.json
-```
-
-- `machine.ts` contains the [`StateMachine`](/build/framework/state-machine/introduction) and [`State`](/build/framework/state-machine/state) classes for your application.
-
-  - Please make sure to export the `StateMachine` object from this file in one of the following ways:
-
-  :::code-group
-
-  ```ts [machine.ts (declaration export)]
-  export const myMachine = new StateMachine({ ... });
-  ```
-
-  ```ts [machine.ts (named export)]
-  const myMachine = new StateMachine({ ... });
-
-  export { myMachine };
-  ```
-
-  ```ts [machine.ts (default export)]
-  const myMachine = new StateMachine({ ... });
-
-  export default myMachine;
-  ```
-
-  :::
-
-- `state.ts` contains the custom state class (extending [`State`](/build/framework/state-machine/state)) for your application.
-- `transitions.ts` contains the [State Transition Functions (STF)](/build/framework/state-machine/state-transitions) for your application.
-- `hooks.ts` contains the [Block Hooks](/build/framework/state-machine/block-hooks) for your application, if any.
-
-:::warning
-
-Note that:
-
-1. It's recommended that all 4 of the above files shouldn't import anything from `@stackr/sdk` and instead use `@stackr/sdk/machine` for the `StateMachine`, `State`, `Transitions`, `Hooks` and other utility classes.
-2. It's recommended to not keep the `State` and `StateMachine` classes in the same file as this would cause circular-import issue when importing the `State` class for writing STFs in `transitions.ts`.
-
-:::
 
 ## Next Steps
 

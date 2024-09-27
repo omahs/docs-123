@@ -1,14 +1,30 @@
 # `register` [Register your Micro-Rollup with Stackr]
 
-The `register` command is the most crucial command in the Stackr SDK. It is used to register your Micro-Rollup with the Stackr on-chain registry.
+The `register` command is used to add your Micro-Rollup to the Stackr on-chain registry.
 
 :::info
-**Few details to note**
+**Few details to note:**
 
 - You don't need to register your application during development with the Stackr SDK.
-- It's recommended to develop and test your application in sandbox mode.
+- It's recommended to develop and test your application in [sandbox mode](/build/zero-to-one/run-it/#lets-run--sandbox-mode).
 - It's recommended to register your application only once you are done with the development.
 - After registration and deployment, if you make any changes to the genesis state or state machine code, you'd need to re-register and re-deploy your application.
+:::
+
+It performs the following 3 operations:
+
+1. Reads the `stackr.config.ts` file for your project's configuration such as the operator account, registry contract address, L1 and Vulcan RPC URLs
+2. Sends a transaction signed with the operator private key to Stackr's registry contract on the L1
+3. The Stackr registry contract assigns a new app ID and deploys a new `AppInbox` contract for your micro-rollup. The operator address is also set as the owner of this contract.
+
+:::tip
+**AppInbox contract** 📝
+
+The AppInbox contract on the L1 acts as the settlement contract for your micro-rollup chain. Some of its responsibilites:
+
+- It is the source of truth for all critical information of your app such as the state machine hash, genesis state hash, current block height, current state root and more.
+- The blocks produced by your app are periodically batched (in sequence) and sent to it for verification and settlement.
+- It only accept blocks that are signed by the micro-rollup operator.
 :::
 
 ## Usage
@@ -33,8 +49,6 @@ EXAMPLES
 ```bash
 npx @stackr/cli@latest register
 ```
-
-This command reads your `stackr.config.json` file for project details and sends a transaction to Stackr's on-chain registry to deploy a new `AppInbox` contract for the application. All the blocks that the app produces will be sent to this contract.
 
 ### Deployment cost
 

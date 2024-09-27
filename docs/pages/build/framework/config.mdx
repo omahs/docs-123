@@ -87,7 +87,7 @@ When running an MRU in sandbox mode, the rollup creates a temporary SQLite datab
 
 2. `deploymentFile`: Relative path to the deployment file containing the `appId`, `appInbox` and `chainId` of the micro-rollup. Defaults to `deployment.json`.
 
-This file is created automatically during registration of the micro-rollup with the registry contract using `stackr register` command. See [Register](/build/cli/register) for more details.
+This file is created automatically during registration of the micro-rollup with the registry contract using [`stackr register`](/build/cli/register) command.
 
 ---
 
@@ -112,25 +112,29 @@ This file is created automatically during registration of the micro-rollup with 
 
 5. `operator`: Contains the parameters for the operator module.
 
-- `accounts`: Contains the private key of the operator account. This private key is used for registration and batch signing
+- `accounts`: Contains the private key of the operator account. This private key is used for registration, deployment, and signing on incoming actions and proposed blocks.
 
 ---
 
-6. `domain`: Contains the parameters for the EIP-712 domain.
+6. `domain`: Contains the parameters for the [EIP-712](https://eips.ethereum.org/EIPS/eip-712) domain.
 
 - `name`: The name of the micro-rollup
 - `version`: The version of the micro-rollup
 - `salt`: A random salt value
 
-The other fields, `chainId` and `verifyingContract`, required by [EIP-712](https://eips.ethereum.org/EIPS/eip-712) domain definition are taken automatically from the given deployment file.
+The other fields, `chainId` and `verifyingContract`, required by EIP-712 domain definition are taken automatically from the given deployment file.
 
-This is used for EIP-712 Typed Signature over the inputs of actions.
+This is used for EIP-712 Typed Signature over the action payloads submitted by users.
+
+:::note
+This also means that the `domain` object here is incomplete and should not be used anywhere in your code. See [Accessing config values](/build/framework/config#accessing-config-values).
+:::
 
 ---
 
 7. `datastore`: Contains the parameters for the datastore module.
 
-This is used for local storage of the micro-rollup state, actions and blocks
+This is used for local storage of the micro-rollup state, actions and blocks.
 
 ---
 
