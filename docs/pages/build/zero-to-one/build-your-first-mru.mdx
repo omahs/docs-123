@@ -73,8 +73,7 @@ Our pre-defined project templates use the default and recommended project struct
 │   │   ├── machine.ts
 │   │   ├── mru.ts
 │   │   ├── state.ts
-│   │   ├── transitions.ts
-│   │   └── hooks.ts
+│   │   └── transitions.ts
 │   └── index.ts
 │── .env.example
 └── stackr.config.ts
@@ -113,13 +112,12 @@ Our pre-defined project templates use the default and recommended project struct
 
   - `state.ts` exports the custom state class (extending [`State`](/build/framework/state-machine/state)) for your micro-rollup.
   - `transitions.ts` exports the [State Transition Functions](/build/framework/state-machine/state-transitions) (as `Transitions`) for your micro-rollup. This file may be omitted if no transitions are defined.
-  - `hooks.ts` exports the [Block Hooks](/build/framework/state-machine/block-hooks) (as `Hooks`) for your micro-rollup. This file may be omitted if no hooks are defined.
   - `mru.ts` exports the [`MicroRollup`](/build/framework/micro-rollup) instance which is the controller for your micro-rollup.
 
 :::info
-Note that:
+Note that
 
-1. It's recommended that the `machine.ts`, `state.ts`, `transitions.ts`, and `hooks.ts` files shouldn't import anything from `@stackr/sdk` and instead use `@stackr/sdk/machine` for the `StateMachine`, `State`, `Transitions`, `Hooks` and other utility classes.
+1. It's recommended that the `machine.ts`, `state.ts`, and `transitions.ts` files shouldn't import anything from `@stackr/sdk` and instead use `@stackr/sdk/machine` for the `StateMachine`, `State`, `Transitions`, `Hooks` and other utility classes.
 2. We don't enforce any specific restrictions on the naming of the files, but keeping the above set of files in the `src/stackr` directory is recommended.
 3. It's recommended to not keep the `State` and `StateMachine` classes in the same file as this would cause circular dependency issue when importing the `State` class for writing STFs in `transitions.ts`.
 :::
@@ -144,7 +142,7 @@ DATABASE_URI=<DATABASE_URI>
 ```
 
 :::info
-Note that:
+Note that
 
 1. We don't store or upload your private key anywhere, it is stored only in your local environment.
 2. No paying transactions would be made from your private key in this tutorial so feel free to use any existing Ethereum account or create a new one without any ETH balance.
