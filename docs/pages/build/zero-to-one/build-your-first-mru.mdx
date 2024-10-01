@@ -119,9 +119,9 @@ Our pre-defined project templates use the default and recommended project struct
 :::info
 Note that:
 
-1. It's recommended that all 4 of the above files shouldn't import anything from `@stackr/sdk` and instead use `@stackr/sdk/machine` for the `StateMachine`, `State`, `Transitions`, `Hooks` and other utility classes.
-2. We don't enforce any specific restrictions on the naming of the files, but keeping the above 4 files in the `src/stackr` directory is recommended.
-3. It's recommended to not keep the `State` and `StateMachine` classes in the same file as this would cause circular-import issue when importing the `State` class for writing STFs in `transitions.ts`.
+1. It's recommended that the `machine.ts`, `state.ts`, `transitions.ts`, and `hooks.ts` files shouldn't import anything from `@stackr/sdk` and instead use `@stackr/sdk/machine` for the `StateMachine`, `State`, `Transitions`, `Hooks` and other utility classes.
+2. We don't enforce any specific restrictions on the naming of the files, but keeping the above set of files in the `src/stackr` directory is recommended.
+3. It's recommended to not keep the `State` and `StateMachine` classes in the same file as this would cause circular dependency issue when importing the `State` class for writing STFs in `transitions.ts`.
 :::
 
 ## Setting up your config
