@@ -53,7 +53,7 @@
 
 - The EIP-712 domain for the app is now injected into the `stf.wasm`.
 - Outputs the actual error message if any step in `compile` (or `deploy`) command fails.
-- Fixes reading of leaf-level shorthand property assingments in `stackr.config.ts`.
+- Fixes reading of leaf-level shorthand property assignments in `stackr.config.ts`.
 - Fixes using the `deploymentFile` property from `stackr.config.ts` for deployment file name if specified (defaults to `deployment.json`).
 
 ## v0.5.4 (and CLI v0.1.4)
@@ -108,7 +108,7 @@
 
 #### Breaking Changes
 
-- Blocks are now rolled up into batches by Vulcan every some fixed interval. Therefore, C3A and above confirmation levels are now received on the batch level from Vulcan and L1. [Learn more](/build/framework/batch).
+- Blocks are now rolled up into batches by Vulcan at every fixed interval. Therefore, C3A and above confirmation levels are now received on the batch level from Vulcan and L1. [Learn more](/build/framework/batch).
 - State Updates are now stored on the Block level and not Action level. In case of a chain revert, the state reverts to the last block having status equal to or higher than `Sequenced`.
 - Renamed `batchSize` and `batchTime` fields in `StackrConfig` to `blockSize` and `blockTime` respectively.
 
@@ -237,7 +237,7 @@ Full Changelog: [v0.1.7...v0.2.0](https://github.com/stackrlabs/go-daash/compar
 2. [SDK] Simplified State structure by dropping `clone` method from requirement and making WrappedState optional for trivial states.
 3. [SDK] Type Safety on inputs in STF by adding `InputType` as optional second param to `STF<A, B>` type.
 4. [CLI] New Templates added for initialising a Micro-rollup.
-5. [CLI ]initialise projects with basic `README.md`
+5. [CLI] Initialise projects with basic `README.md`
 6. [CLI] Add `chainId` to `deployment.json` making it easier for user to get Chain Information for Signing Domain
 7. [CLI] Clean-up interim build files in process of making State Machine WASM
 8. [SDK] Take `stateMachines` in MRU constructor.
@@ -247,12 +247,12 @@ Full Changelog: [v0.1.7...v0.2.0](https://github.com/stackrlabs/go-daash/compar
 
 #### Fixes
 
-1. [SDK] Fix duplication batch submission to Vulcan incase of high response times.
+1. [SDK] Fix duplication batch submission to Vulcan in case of high response times.
 2. [CLI] Sanitise URLs and payload before sending deployment requests to Parent Chain and Vulcan.
 3. [CLI] Handle Registration with `falsy` Genesis states.
 4. [SDK] Initialisation of Parent Chain listeners in `sandbox` Mode. [Lazy Initialisation]
 5. [SDK] Serialisation of `bigint` entities to `number` before sending it in batch to Vulcan.
-6. [VULCAN] Compare `primitve` and `non-primitive` Genesis States separately, to avoid serialisation causing validation failures.
+6. [VULCAN] Compare `primitive` and `non-primitive` Genesis States separately, to avoid serialisation causing validation failures.
 
 ## v0.2.4-alpha to v0.2.11-alpha
 
