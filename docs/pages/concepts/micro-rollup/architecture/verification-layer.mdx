@@ -18,7 +18,7 @@ Therefore, Vulcan provides a flexible range of settlement-as-a-service options f
 <img src="/assets/deploy.png" alt="Deployment flow" />
 
 Before Vulcan can start verifying blocks, the developer must first build out their Stackr State machine (SSM) and deploy it as a microrollup (execution layer).
-The SSM is then compiled down to a WASM binary and sent to Vulcan, alongwith an initial genesis state. This all happens when executing the `deploy` CLI command.
+The SSM is then compiled down to a WASM binary and sent to Vulcan, along with an initial genesis state. This all happens when executing the `deploy` CLI command.
 
 <Callout type="info">
   In the future, Vulcan will post the binary and genesis state to a DA layer to
@@ -69,4 +69,4 @@ Vulcan behaves like a fast finality settlement layer, providing soft confirmatio
 
 Once an incoming block is verified, Vulcan will first ensure its availability by posting it to a DA layer of the developer's choice. This can be Avail, Celestia or EigenDA.
 After finalizing proof of data publication, Vulcan will emit a `C3A` confirmation event to denote guaranteed data availability and then proceed to submit the batch (a set of blocks) to the corresponding MRU's `AppInbox` smart contract on the parent chain.
-On successful submission, the batch (a set of blocks) will be appended to the canonical chain on L1 and Vulcan will emit a `C3B` confirmation event denoting succesful settlement of the batch onchain.
+On successful submission, the batch (a set of blocks) will be appended to the canonical chain on L1 and Vulcan will emit a `C3B` confirmation event denoting successful settlement of the batch onchain.
